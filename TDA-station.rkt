@@ -80,7 +80,7 @@ funcion que obtiene el elemento nombre de un TDA station|#
   )
 
 #|DOM: estacion (station)
-REC: tipo de estacion (string) U {null}                                  OJO QUE HAY QUE HACER EL TDA TYPE-STATION
+REC: tipo de estacion (string) U {null}
 funcion que obtiene el elemento tipo de estacion de un TDA station|#
 (define get-type-station-station (lambda (station)
                                   (if (station? station)
@@ -128,13 +128,13 @@ funcion que crea un elemento TDA station a partir del elemento station de argume
                           )
   )
 
-#|DOM: estacion (station) X tipo de estacion (string)                                             NSEWWWWWWWWWWWWWWWWWWWWWWWWW
+#|DOM: estacion (station) X tipo de estacion (string)
 REC: (station) U {null}
 funcion que crea un elemento TDA station a partir del elemento station de argumento, pero con un nuevo tipo de estacion |#
 (define set-type-station-station (lambda (estacion new-type)
                                   (if (and (station? estacion)(type-station? new-type))
                                       (station (get-id-station estacion) (get-name-station estacion)
-                                               (set-type-station (get-type-station-station) new-type) (get-time-stop-station estacion))
+                                               (set-type-station (get-type-station-station estacion) new-type) (get-time-stop-station estacion))
                                       null
                                       )
                                   )
