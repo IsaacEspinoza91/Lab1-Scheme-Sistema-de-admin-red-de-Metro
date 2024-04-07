@@ -27,7 +27,8 @@ funcion que crea un elemento del TDA section, en el caso de algun argumento inva
 REC: bool
 funcion que verifica si un elemento es del tipo section |#
 (define section? (lambda (seccion)
-                   (if (and (station? (car seccion)) (station? (cadr seccion))
+                   (if (and (not (number? seccion)) (not (string? seccion)) (not (boolean? seccion)) ;se agregaron estas condiciones al inicio evitar errores en el TDA line al verificar secciones
+                            (station? (car seccion)) (station? (cadr seccion))
                             (distance-section? (caddr seccion)) (cost-section? (cadddr seccion))
                             )
                        #t

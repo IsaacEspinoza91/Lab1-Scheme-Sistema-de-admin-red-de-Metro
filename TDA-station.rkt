@@ -1,5 +1,6 @@
 #lang racket
 (require "TDA-type-station.rkt")
+(provide station station?)
 
 ;TDA station, abstraccion de una estacion de metro como una lista
 ;Representacion: lista con elementos (id - nombre - tipo de estacion - tiempo de parada en estacion)
@@ -93,10 +94,10 @@ funcion que obtiene el elemento tipo de estacion de un TDA station|#
 REC: tiempo de parada de estacion (entero positivo) U {null}
 funcion que obtiene el elemento tiempo de parada en una estacion de un TDA station |#
 (define get-time-stop-station (lambda (station)
-                           (if (station? station)
-                               (cadddr station)
-                               null)
-                           )
+                               (if (station? station)
+                                   (cadddr station)
+                                   null)
+                               )
   )
 
 
