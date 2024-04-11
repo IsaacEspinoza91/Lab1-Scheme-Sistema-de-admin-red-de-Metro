@@ -1,9 +1,9 @@
 #lang racket
 (require "TDA-station.rkt")
-(provide section section? get-distance-section get-cost-section get-station1-section get-station2-section)
+(provide section section? get-distance-section)
 
 ;TDA section, abstraccion de una seccion/enlace/tramo entre dos estaciones de metro como una lista de elementos
-;Representacion: lista con elementos (estacion1 - estacion2 - distancia entre estaciones (real positivo) - costo monetario (real no negativo))
+;Representacion: lista con elementos (estacion1 - estacion2 - distancia entre estaciones (real positivo) - costo (real no negativo))
 
 
 
