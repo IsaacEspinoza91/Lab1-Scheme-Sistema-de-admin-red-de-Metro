@@ -16,10 +16,10 @@
 REC: linea de metro (line)
 funcion que crea un elemento del TDA line |#
 (define line (lambda (id name rain-type . sections)
-               (if (and (number? id) (string? name) (string? rain-type)
+               (if (and (id-line? id) (name-line? name) (rain-type-line? rain-type)
                         ;se usa otro condicional para el caso de no ingresar secciones para hacerlo despues,
                         ;y si que se ingresaron secciones que estas efectivamente sean del TDA secciones
-                        (if (empty? sections) #t (sections-line? sections))
+                        ;(if (empty? sections) #t (sections-line? sections))                                                                                        ojo esta parte, ver condicion
                         ); la funcion sections-line? usa recursion (ver documentacion mas abajo)
                    (list id name rain-type sections)
                    null)
@@ -33,10 +33,11 @@ funcion que crea un elemento del TDA line |#
 
 #|DOM: linea de metro (line)
 REC: bool
+Recursion de cola. La funcion sections-line? utiliza la recursion de cola para verificar si los elementos pertenecen cada uno al TDA section
 funcion que verifica si un elemento es del tipo TDA line |#
 (define line? (lambda (linea)
                 (if (and (id-line? (car linea)) (name-line? (cadr linea))
-                         (rain-type-line? (caddr linea)) (if (empty? (cadddr linea)) #t (sections-line? (cadddr linea))))
+                         (rain-type-line? (caddr linea))           );(if (empty? (cadddr linea)) #t (sections-line? (cadddr linea))))
                     #t
                     #f)
                 )
@@ -67,7 +68,7 @@ nota: esta funcion utiliza la recursion de cola para ir aplicando la funcion sec
 (define sections-line? (lambda (secciones)
                          (if (empty? secciones)
                              #f
-                             (if (and (section? (car secciones)))
+                             (if (section? (car secciones))
                                 (if (empty? (cdr secciones))
                                     #t
                                     (sections-line? (cdr secciones)))
@@ -282,4 +283,28 @@ funcion que retorna el costo monetario del trayecto entre dos estaciones|#
 
 
 
+
+
+;MALA, NO FUNCIONA
+;me dio sueno manana veo que onda
+;IDEA hacer funcion bolleana aparte que solo verifique la seccion no este repetida
+(define line-add-section (lambda (linea nueva-seccion)
+                           (define (fun-aux secciones new-seccion)
+                                   (if (section? new-seccion)
+                                       (if (empty? secciones)
+                                           new-seccion
+                                           (if ;(eqv? (get-name-station (get-station1-section (car secciones)))
+                                                     ;(get-name-station (get-station1-section new-seccion)))
+                                            #f
+                                               null  ;caso de que la seccion ya estaba, se devuelve null para que no se agregen seciones al line del parametro inicial
+                                               (cons (car secciones) (list (fun-aux (cdr secciones) new-seccion)))
+                                               )
+                                           )
+                                       null)
+                             )
+
+                           (line (get-id-line linea) (get-name-line linea) (get-rain-type-line linea) (fun-aux (get-sections-line linea) nueva-seccion))
+
+                           )
+  )
 
