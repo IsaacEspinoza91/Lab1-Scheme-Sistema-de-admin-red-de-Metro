@@ -1,10 +1,5 @@
 #lang racket
-(require "TDA-section.rkt")
-(require "TDA-station.rkt")
-(require "TDA-type-station.rkt")
-(require "TDA-line.rkt")
-(provide pcar pcar? tr ct get-type-pcar get-model-pcar get-capacity-pcar)
-
+(provide pcar pcar? tr ct)
 
 ;TDA pcar, abstraccion de un carro/bagon de pasajeros que posteriormente conforman un tren
 ;pueden ser del tipo terminal (tr) o del tipo central (ct)

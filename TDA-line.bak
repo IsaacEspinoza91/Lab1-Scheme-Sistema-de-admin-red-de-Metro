@@ -2,7 +2,6 @@
 (require "TDA-section.rkt")
 (require "TDA-station.rkt")
 (require "TDA-type-station.rkt")
-(provide line line? line-length line-section-length line-cost line-section-cost line-add-section)
 
 
 ;TDA line, abstraccion de una linea de metro como una lista de elementos
@@ -21,7 +20,7 @@ funcion que crea un elemento del TDA line |#
                (if (and (id-line? id) (name-line? name) (rail-type-line? rail-type)
                         ;se usa otro condicional para el caso de no ingresar secciones para hacerlo despues,
                         ;y si que se ingresaron secciones que estas efectivamente sean del TDA secciones
-                        ;(if (empty? sections) #f (sections-line? sections))                                                                                        ojo esta parte, ver condicion
+                        ;(if (empty? sections) #t (sections-line? sections))                                                                                        ojo esta parte, ver condicion
                         ); la funcion sections-line? usa recursion (ver documentacion mas abajo)
                    (list id name rail-type sections)
                    null)
@@ -36,22 +35,10 @@ funcion que crea un elemento del TDA line |#
 #|DOM: linea de metro (line)
 REC: bool
 Recursion de cola. La funcion sections-line? utiliza la recursion de cola para verificar si los elementos pertenecen cada uno al TDA section
-Funcion que verifica si un elemento es del tipo TDA line |#
+funcion que verifica si un elemento es del tipo TDA line |#
 (define line? (lambda (linea)
                 (if (and (id-line? (car linea)) (name-line? (cadr linea))
-                         (rail-type-line? (caddr linea)) (sections-line? (cadddr linea)))
-                    #t
-                    #f)
-                )
-  )
-
-#|DOM: linea de metro (line)
-REC: bool
-Declarativo.
-funcion que verifica si un elemento es del tipo TDA line sin verificar si tiene la lista de sections, esto con el
-     motivo de no perjudicar una linea cuando se quiere agregar sections posteriormente|#
-(define line-without-check-sections? (lambda (linea)
-                (if (and (id-line? (car linea)) (name-line? (cadr linea)) (rail-type-line? (caddr linea)))
+                         (rail-type-line? (caddr linea))           );(if (empty? (cadddr linea)) #t (sections-line? (cadddr linea))))
                     #t
                     #f)
                 )
@@ -101,7 +88,7 @@ nota: esta funcion utiliza la recursion de cola para ir aplicando la funcion sec
 REC: id linea de metro(entero) U {null}
 funcion que obtiene el elemento id de un TDA line |#
 (define get-id-line (lambda (linea)
-                       (if (line-without-check-sections? linea)
+                       (if (line? linea)
                            (car linea)
                            null)
                        )
@@ -111,7 +98,7 @@ funcion que obtiene el elemento id de un TDA line |#
 REC: nombre linea de meotr (string) U {null}
 funcion que obtiene el elemento nombre de un TDA line |#
 (define get-name-line (lambda (linea)
-                        (if (line-without-check-sections? linea)
+                        (if (line? linea)
                             (cadr linea)
                             null)
                         )
@@ -121,7 +108,7 @@ funcion que obtiene el elemento nombre de un TDA line |#
 REC: tipo de vias de una linea de metro(string) U {null}
 funcion que obtiene el elemento rain-type de un TDA line |#
 (define get-rain-type-line (lambda (linea)
-                             (if (line-without-check-sections? linea)
+                             (if (line? linea)
                                  (caddr linea)
                                  null)
                              )
@@ -131,7 +118,7 @@ funcion que obtiene el elemento rain-type de un TDA line |#
 REC: secciones de estaciones de metro de una linea (lista de TDAs section) U {null}
 funcion que obtiene el elemento TDA secciones de un TDA line |#
 (define get-sections-line (lambda (linea)
-                            (if (line-without-check-sections? linea)
+                            (if (line? linea)
                                 (cadddr linea)
                                 null)
                             )
@@ -144,9 +131,9 @@ funcion que obtiene el elemento TDA secciones de un TDA line |#
 
 #|DOM: linea de metro (line) X id linea de metro (entero)
 REC: linea de metro (line) U {null}
-Funcion que crea un elemento TDA line a partir del elemento linea de los argumentos, pero con un nueva id |#
+funcion que crea un elemento TDA line a partir del elemento linea de los argumentos, pero con un nueva id |#
 (define set-id-line (lambda (linea new-id)
-                      (if (and (line-without-check-sections? linea) (id-line? new-id))
+                      (if (and (line? linea) (id-line? new-id))
                           (line new-id (get-name-line linea)
                                 (get-rain-type-line linea) (get-sections-line linea))
                           null)
@@ -155,9 +142,9 @@ Funcion que crea un elemento TDA line a partir del elemento linea de los argumen
 
 #|DOM: linea de metro (line) X nombre linea de metro (string)
 REC: linea de metro (line) U {null}
-Funcion que crea un elemento TDA line a partir del elemento linea de los argumentos, pero con un nuevo nombre de linea |#
+funcion que crea un elemento TDA line a partir del elemento linea de los argumentos, pero con un nuevo nombre de linea |#
 (define set-name-line (lambda (linea new-name)
-                      (if (and (line-without-check-sections? linea) (name-line? new-name))
+                      (if (and (line? linea) (name-line? new-name))
                           (line (get-id-line linea) new-name
                                 (get-rain-type-line linea) (get-sections-line linea))
                           null)
@@ -166,9 +153,9 @@ Funcion que crea un elemento TDA line a partir del elemento linea de los argumen
 
 #|DOM: linea de metro (line) X tipo de vias de una linea de metro(string)
 REC: linea de metro (line) U {null}
-Funcion que crea un elemento TDA line a partir del elemento linea de los argumentos, pero con un nuevo tipo de vias (rain-type) |#
+funcion que crea un elemento TDA line a partir del elemento linea de los argumentos, pero con un nuevo tipo de vias (rain-type) |#
 (define set-rain-type-line (lambda (linea new-rain-type)
-                      (if (and (line-without-check-sections? linea) (rail-type-line? new-rain-type))
+                      (if (and (line? linea) (rail-type-line? new-rain-type))
                           (line (get-id-line linea) (get-name-line linea)
                                 new-rain-type (get-sections-line linea))
                           null)
@@ -177,9 +164,9 @@ Funcion que crea un elemento TDA line a partir del elemento linea de los argumen
 
 #|DOM: linea de metro (line) X lista secciones de estaciones de metro de una linea (lista de TDAs section)
 REC: linea de metro (line) U {null}
-Funcion que crea un elemento TDA line a partir del elemento linea de los argumentos, pero con un nueva lista de TDA section |#
+funcion que crea un elemento TDA line a partir del elemento linea de los argumentos, pero con un nueva lista de TDA section |#
 (define set-sections-line (lambda (linea new-sections)
-                      (if (and (line-without-check-sections? linea) );(sections-line? new-sections))
+                      (if (and (line? linea) );(sections-line? new-sections))
                           (line (get-id-line linea) (get-name-line linea)
                                 (get-rain-type-line linea) new-sections)
                           null)
@@ -241,6 +228,18 @@ funion que entrega la distania en metros entre dos estaciones de una linea, dado
 
 
 
+#|                                      DEBE SER RECURSIVA SEGUN EL ENUNCIADO
+DOM: linea de metro (line)
+REC: costo (real positivo)
+Función que permite determinar el costo total en distacia de una línea
+Resolucion declarativa
+(define line-cost (lambda (linea)
+                    (apply + (map get-cost-section (get-sections-line linea)))
+                    )
+  )
+|#
+
+
 #|
 DOM: linea de metro (line)
 REC: costo (real positivo)
@@ -261,7 +260,7 @@ Función que permite determinar el costo total en distacia de una línea |#
 #|DOM: linea de metro (line) X nombre de estacion 1 (station) X nombre de estacion 2 (station)
 REC: costo monetario (numero real no negativo)
 Recursion de cola
-Funcion que retorna el costo monetario del trayecto entre dos estaciones|#
+funcion que retorna el costo monetario del trayecto entre dos estaciones|#
 (define line-section-cost (lambda (linea name-station1 name-station2)
                               (define (fn-aux secciones st1 st2)
                                       (if (empty? secciones)   ;condicion de borde fin de recursion, no se encontraron los nombres
@@ -316,7 +315,7 @@ Funcion que agrega una seccion (TDA section) entre estaciones a un TDA line|#
 #|DOM: lista de TDAs sections (lista sections) X elemento section buscado (TDA section)
 REC: bool
 Recursion de cola
-Funcion booleana que indica si un TDA section ya esta dentro de una lista de TDAs sections
+funcion booleana que indica si un TDA section ya esta dentro de una lista de TDAs sections
 Metodo: comparacion de nombres
 Se utiliza en la funcion line-add-section|#
 (define (is-section-in-sections-line? secciones seccion-buscada) ;en esta funcion deberia agregar la condicion de confirmar ademas la ID de cada seccion en sections
