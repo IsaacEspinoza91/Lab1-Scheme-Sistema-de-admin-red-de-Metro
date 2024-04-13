@@ -1,5 +1,5 @@
 #lang racket
-(provide type-station type-station? get-type-station set-type-station)
+(provide type-station type-station? get-type-station set-type-station r m c t)
 
 #|TDA type-station, utilizado para abtraer los tipos de estaciones de la red de metro y la funcion de estas.
 REPRESENTACION: string de un caracter en minusculas donde se indique la funcion de la estacion. Los caracteres posibles para las funciones son:
@@ -9,6 +9,10 @@ REPRESENTACION: string de un caracter en minusculas donde se indique la funcion 
     "t" (terminal): estacion final de una linea de metro, tambien puede funcionar para hacer combinaciones entre lineas
 |#
 
+(define r "r")
+(define m "m")
+(define c "c")
+(define t "t")
 
 
 ;CONSTRUCTOR type-station

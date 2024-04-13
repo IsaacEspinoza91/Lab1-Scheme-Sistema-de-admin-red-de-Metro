@@ -1,6 +1,7 @@
 #lang racket
 (require "TDA-section.rkt")
 (require "TDA-station.rkt")
+(require "TDA-type-station.rkt")
 
 
 ;TDA line, abstraccion de una linea de metro como una lista de elementos
@@ -15,13 +16,13 @@
 #|DOM: id (entero) X nombre (string) X tipo de vias (strig) X secciones* (section*)
 REC: linea de metro (line)
 funcion que crea un elemento del TDA line |#
-(define line (lambda (id name rain-type . sections)
-               (if (and (id-line? id) (name-line? name) (rain-type-line? rain-type)
+(define line (lambda (id name rail-type . sections)
+               (if (and (id-line? id) (name-line? name) (rail-type-line? rail-type)
                         ;se usa otro condicional para el caso de no ingresar secciones para hacerlo despues,
                         ;y si que se ingresaron secciones que estas efectivamente sean del TDA secciones
                         ;(if (empty? sections) #t (sections-line? sections))                                                                                        ojo esta parte, ver condicion
                         ); la funcion sections-line? usa recursion (ver documentacion mas abajo)
-                   (list id name rain-type sections)
+                   (list id name rail-type sections)
                    null)
                )
   )                                                                                                            ;SE DEBE MEJORAR PARA CUMPLIR REQUISISTOS DE IMPLEMENTACION
@@ -37,7 +38,7 @@ Recursion de cola. La funcion sections-line? utiliza la recursion de cola para v
 funcion que verifica si un elemento es del tipo TDA line |#
 (define line? (lambda (linea)
                 (if (and (id-line? (car linea)) (name-line? (cadr linea))
-                         (rain-type-line? (caddr linea))           );(if (empty? (cadddr linea)) #t (sections-line? (cadddr linea))))
+                         (rail-type-line? (caddr linea))           );(if (empty? (cadddr linea)) #t (sections-line? (cadddr linea))))
                     #t
                     #f)
                 )
@@ -56,7 +57,7 @@ funcion que verifica si un dato puede ser nombre de un TDA line|#
 #|DOM: tipo de vias de una linea de metro(string)
  REC: bool
 funcion que verifica si un dato puede ser tipo de vias de un TDA line |#
-(define rain-type-line? (lambda (tipo-via) (if (string? tipo-via) #t #f)))
+(define rail-type-line? (lambda (tipo-via) (if (string? tipo-via) #t #f)))
 
 #|DOM: lista secciones de estaciones de metro de una linea (lista de TDAs section)
  REC: bool
@@ -154,7 +155,7 @@ funcion que crea un elemento TDA line a partir del elemento linea de los argumen
 REC: linea de metro (line) U {null}
 funcion que crea un elemento TDA line a partir del elemento linea de los argumentos, pero con un nuevo tipo de vias (rain-type) |#
 (define set-rain-type-line (lambda (linea new-rain-type)
-                      (if (and (line? linea) (rain-type-line? new-rain-type))
+                      (if (and (line? linea) (rail-type-line? new-rain-type))
                           (line (get-id-line linea) (get-name-line linea)
                                 new-rain-type (get-sections-line linea))
                           null)
@@ -164,8 +165,8 @@ funcion que crea un elemento TDA line a partir del elemento linea de los argumen
 #|DOM: linea de metro (line) X lista secciones de estaciones de metro de una linea (lista de TDAs section)
 REC: linea de metro (line) U {null}
 funcion que crea un elemento TDA line a partir del elemento linea de los argumentos, pero con un nueva lista de TDA section |#
-(define set-sections-type-line (lambda (linea new-sections)
-                      (if (and (line? linea) (sections-line? new-sections))
+(define set-sections-line (lambda (linea new-sections)
+                      (if (and (line? linea) );(sections-line? new-sections))
                           (line (get-id-line linea) (get-name-line linea)
                                 (get-rain-type-line linea) new-sections)
                           null)
@@ -284,27 +285,52 @@ funcion que retorna el costo monetario del trayecto entre dos estaciones|#
 
 
 
-
-;MALA, NO FUNCIONA
-;me dio sueno manana veo que onda
-;IDEA hacer funcion bolleana aparte que solo verifique la seccion no este repetida
+#|DOM: linea de metro (TDA line) X elemento seccion entre estaciones(TDA section)
+ REC: (TDA line)
+Recursividad natural; se usa recursion natural para crear la lista de TDAs sections, ademas se hace
+     uso de la funcion externa is-section-in-sections-line? que utiliza recursion de cola para verificar que no existan secciones repetidas en la lista
+Funcion que agrega una seccion (TDA section) entre estaciones a un TDA line|#
 (define line-add-section (lambda (linea nueva-seccion)
-                           (define (fun-aux secciones new-seccion)
-                                   (if (section? new-seccion)
-                                       (if (empty? secciones)
-                                           new-seccion
-                                           (if ;(eqv? (get-name-station (get-station1-section (car secciones)))
-                                                     ;(get-name-station (get-station1-section new-seccion)))
-                                            #f
-                                               null  ;caso de que la seccion ya estaba, se devuelve null para que no se agregen seciones al line del parametro inicial
-                                               (cons (car secciones) (list (fun-aux (cdr secciones) new-seccion)))
-                                               )
-                                           )
-                                       null)
+                           (define fn-aux22 (lambda (secciones new-section);notar recursion de stack
+                                            (if (empty? secciones)
+                                                (list new-section)
+                                                (append (list (car secciones))  (fn-aux22 (cdr secciones) new-section))
+                                                )
+                                            )
                              )
-
-                           (line (get-id-line linea) (get-name-line linea) (get-rain-type-line linea) (fun-aux (get-sections-line linea) nueva-seccion))
-
+                           (cond
+                             [(not (section? nueva-seccion)) linea];caso que la nueva-seccion no pertenesca al TDA section
+                             [(empty? (get-sections-line linea)) (set-sections-line linea nueva-seccion)]
+                             [(is-section-in-sections-line? (get-sections-line linea) nueva-seccion) linea];caso de que el nombre de la estacion ya este repetido                                             ojo, se deber[ia impleentar que tambien verifique la id de las secciones y que no este repetida
+                             [else (list (get-id-line linea) (get-name-line linea) (get-rain-type-line linea)
+                                    (fn-aux22 (get-sections-line linea) nueva-seccion))]; caso de que no hay secciones repetidas y se agrega normalmente
+                                   ; se opta por usar la funcion list en vez del constructor de lista para evitar problemas con la encapsulacion de la lista de sections,
+                                   ; sin embargo, con las condiciones previas efectivamente se retorna un elemento del TDA line
+                             )
                            )
   )
+
+
+
+#|DOM: lista de TDAs sections (lista sections) X elemento section buscado (TDA section)
+REC: bool
+Recursion de cola
+funcion booleana que indica si un TDA section ya esta dentro de una lista de TDAs sections
+Metodo: comparacion de nombres
+Se utiliza en la funcion line-add-section|#
+(define (is-section-in-sections-line? secciones seccion-buscada) ;en esta funcion deberia agregar la condicion de confirmar ademas la ID de cada seccion en sections
+        (if (empty? secciones)
+            #f; caso no esta repetida la seccion-buscada en secciones
+            (if (eqv? (get-name-station (get-station1-section (car secciones)))
+                      (get-name-station (get-station1-section seccion-buscada))
+                      )
+                #t
+                (is-section-in-sections-line? (cdr secciones) seccion-buscada)
+                )
+            )
+  )
+
+
+
+
 
