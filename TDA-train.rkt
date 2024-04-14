@@ -322,6 +322,9 @@ Funcion que agrega un carro en una posicion especifica dentro de la lista de TDA
                         )
   )
 
+#|DOM: tren sin validar pcars (TDA train) x posicion de carro dentro del tren (entero no negativo)
+REC: tren sin validar pcars (TDA train)
+Funcion que elimina un carro de un TDA train, de modo que se elimina un carro en una posicion especifica de la lista carros del tren|#
 (define train-remove-car (lambda (tren posicion)
                            (define (eliminar-elemento-en-lista lista position)
                                    (cond
