@@ -2,7 +2,8 @@
 (require "TDA-section.rkt")
 (require "TDA-station.rkt")
 (require "TDA-type-station.rkt")
-(provide line line? line-length line-section-length line-cost line-section-cost line-add-section)
+(provide line line? line-length line-section-length line-cost line-section-cost line-add-section
+         get-id-line get-name-line get-rail-type-line get-sections-line)
 
 
 ;TDA line, abstraccion de una linea de metro como una lista de elementos
@@ -120,7 +121,7 @@ funcion que obtiene el elemento nombre de un TDA line |#
 #|DOM: linea de metro (line)
 REC: tipo de vias de una linea de metro(string) U {null}
 funcion que obtiene el elemento rain-type de un TDA line |#
-(define get-rain-type-line (lambda (linea)
+(define get-rail-type-line (lambda (linea)
                              (if (line-without-check-sections? linea)
                                  (caddr linea)
                                  null)
@@ -148,7 +149,7 @@ Funcion que crea un elemento TDA line a partir del elemento linea de los argumen
 (define set-id-line (lambda (linea new-id)
                       (if (and (line-without-check-sections? linea) (id-line? new-id))
                           (line new-id (get-name-line linea)
-                                (get-rain-type-line linea) (get-sections-line linea))
+                                (get-rail-type-line linea) (get-sections-line linea))
                           null)
                       )
   )
@@ -159,7 +160,7 @@ Funcion que crea un elemento TDA line a partir del elemento linea de los argumen
 (define set-name-line (lambda (linea new-name)
                       (if (and (line-without-check-sections? linea) (name-line? new-name))
                           (line (get-id-line linea) new-name
-                                (get-rain-type-line linea) (get-sections-line linea))
+                                (get-rail-type-line linea) (get-sections-line linea))
                           null)
                       )
   )
@@ -181,7 +182,7 @@ Funcion que crea un elemento TDA line a partir del elemento linea de los argumen
 (define set-sections-line (lambda (linea new-sections)
                       (if (and (line-without-check-sections? linea) );(sections-line? new-sections))
                           (line (get-id-line linea) (get-name-line linea)
-                                (get-rain-type-line linea) new-sections)
+                                (get-rail-type-line linea) new-sections)
                           null)
                       )
   )
@@ -303,7 +304,7 @@ Funcion que agrega una seccion (TDA section) entre estaciones a un TDA line|#
                              [(not (section? nueva-seccion)) linea];caso que la nueva-seccion no pertenesca al TDA section
                              [(empty? (get-sections-line linea)) (set-sections-line linea nueva-seccion)]
                              [(is-section-in-sections-line? (get-sections-line linea) nueva-seccion) linea];caso de que el nombre de la estacion ya este repetido                                             ojo, se deber[ia impleentar que tambien verifique la id de las secciones y que no este repetida
-                             [else (list (get-id-line linea) (get-name-line linea) (get-rain-type-line linea)
+                             [else (list (get-id-line linea) (get-name-line linea) (get-rail-type-line linea)
                                     (fn-aux22 (get-sections-line linea) nueva-seccion))]; caso de que no hay secciones repetidas y se agrega normalmente
                                    ; se opta por usar la funcion list en vez del constructor de lista para evitar problemas con la encapsulacion de la lista de sections,
                                    ; sin embargo, con las condiciones previas efectivamente se retorna un elemento del TDA line

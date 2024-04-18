@@ -4,6 +4,8 @@
 (require "TDA-station.rkt")
 (require "TDA-type-station.rkt")
 (require "TDA-line.rkt")
+(provide train train? train-add-car train-remove-car train-capacity get-id-train get-maker-train get-rail-type-train get-speed-train
+         get-station-stay-time-train)
 
 ;TDA train, abstraccion de un tren del metro conformado por vagones (TDAs pcar)
 ;Representacion: lista con elementos (id del tren - fabricante del tren - tipo de vias compatibles con el tren - rapidez del tren (km/h)

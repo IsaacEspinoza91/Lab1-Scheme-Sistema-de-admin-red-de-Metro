@@ -1,6 +1,6 @@
 #lang racket
 (require "TDA-type-station.rkt")
-(provide station station? get-name-station)
+(provide station station? get-id-station get-name-station get-type-station-station get-time-stop-station)
 
 ;TDA station, abstraccion de una estacion de metro como una lista
 ;Representacion: lista con elementos (id - nombre - tipo de estacion - tiempo de parada en estacion)
