@@ -8,7 +8,7 @@
 
 ;TDA line, abstraccion de una linea de metro como una lista de elementos
 ;Representacion: lista con elementos (id de la linea - nombre de linea
-;              - tipo de vias de tren - secciones entre estaciones* (sin aridad de secciones, pueden ser varias)
+;              - tipo de vias de tren - lista de secciones entre estaciones* (sin aridad de secciones, pueden ser varias)
 
 
 

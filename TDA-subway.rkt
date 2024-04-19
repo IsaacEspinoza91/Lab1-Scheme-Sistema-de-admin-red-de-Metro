@@ -169,20 +169,19 @@ Funicion que crea un TDA subway pero con una nuevo elemento routes|#
 #|DOM: metro (subway) X trenes+ (TDAs train+ ) (puede ser 1 o mas)
 REC: metro (subway)
 Recursion natural
-Funcion que agrega los trenes del argumento al parametro de trenes dentro del subway, usa la funcion
-     fn-aux-recursion para cumplir el requisito de implementacion de emplear algun tipo de recursividad|#
+Funcion que agrega los trenes del argumento al parametro de trenes dentro del subway de modo que este tenga o no otros trenes en un inicio,
+     usa la funcion fn-aux para cumplir el requisito de implementacion de emplear algun tipo de recursividad|#
 (define subway-add-train (lambda (metro . trenes)
-                           ;funcion que usa la recursion natural para retornar una lista con los elementos
-                           ;de una lista de entrada. Requisito de implementacion 
-                           (define (fn-aux-recursion lista)
-                             (if (empty? lista)
-                                 null
-                                 (cons (car lista) (fn-aux-recursion (cdr lista))))
+                           ;funcion que usa la recursion natural para retornar la union de dos listas de parametros
+                           (define (fn-aux lista1 lista2)
+                             (cond
+                               [(empty? lista1) lista2]
+                               [else (cons (car lista1) (fn-aux (cdr lista1) lista2))])
                              )
                            
                            (if (subway-without-all-elements? metro)
                                (list (get-id-subway metro) (get-name-subway metro)
-                                     (fn-aux-recursion trenes) (get-lines-subway metro)
+                                     (fn-aux (get-trains-subway metro) trenes) (get-lines-subway metro)
                                      (get-drivers-subway metro) (get-line-trains-subway metro)
                                      (get-routes-subway metro))
                                null)
@@ -197,7 +196,7 @@ Funcion que agrega las lineas del argumento al parametro de lineas del subway|#
 (define subway-add-line (lambda (metro . lineas)
                            (if (subway-without-all-elements? metro)
                                (list (get-id-subway metro) (get-name-subway metro)
-                                     (get-trains-subway metro) lineas
+                                     (get-trains-subway metro) (append (get-lines-subway metro) lineas)
                                      (get-drivers-subway metro) (get-line-trains-subway metro)
                                      (get-routes-subway metro))
                                null)
@@ -214,7 +213,7 @@ Funcion que agrega los conductores del argumento al parametro de drivers del sub
                            (if (subway-without-all-elements? metro)
                                (list (get-id-subway metro) (get-name-subway metro)
                                      (get-trains-subway metro) (get-lines-subway metro)
-                                     conductores (get-line-trains-subway metro)
+                                     (append (get-drivers-subway metro) conductores) (get-line-trains-subway metro)
                                      (get-routes-subway metro))
                                null)
                            )
@@ -312,71 +311,34 @@ Funcion que imprime en panta todos los elementos de un metro TDA subway. Utiliza
 
 
 
-(define (1printear-drivers drivers)
-  (define (printear-conductor conduc)
-    (display "\n   Id conductor: ")
-    (display (number->string (get-id-driver conduc)))
-    (display "\n   Nombre: ")
-    (display (get-name-driver conduc))
-    (display "\n   Fabricante de trenes que conduce: ")
-    (display (get-maker-train-driver conduc))
-    (display "\n")
-    )
-  (map (lambda (s) (printear-conductor s)) drivers)
-  )
-
-(define (1printear-trenes list-trains)
-  (define (printear-tren tren)
-    (display "\n   Id tren: ")
-    (display (number->string (get-id-train tren)))
-    (display "\n   Fabricante: ")
-    (display (get-maker-train tren))
-    (display "\n   Tipo de riel: ")
-    (display (get-rail-type-train tren))
-    (display "\n   Rapidez: ")
-    (display (number->string (get-speed-train tren)))
-    (display (string-append "\n   Tiempo de espera por estacion: "
-                          (number->string (get-station-stay-time-train tren))
-                          " minutos\n"))
-    )
-  (map (lambda (a) (printear-tren a)) list-trains)
-  )
 
 
 
 
 
-
-
-(define (1printear-lineas lineas)
-  
-  (define (printear-linea linea)
-    
-    (define (printear-seccion seccion)
-      (display "\n      Estacion 1: ")
-      (display (string-append (get-name-station (get-station1-section seccion))
-                       "  Tipo: " (get-type-station-station (get-station1-section seccion))))
-      (display "\n      Estacion 2: ")
-      (display (string-append (get-name-station (get-station2-section seccion))
-                       "  Tipo: " (get-type-station-station (get-station2-section seccion))))
-      (display "\n      Distancia entre estaciones: ")
-      (display (number->string (get-distance-section seccion)))
-      (display "km\n      Costo monetario: ")
-      (display (number->string (get-cost-section seccion)))
-      (display "\n")
-      )
-
-    (display "\n   Id linea: ")
-    (display (number->string (get-id-line linea)))
-    (display (string-append "\n   Nombre: " (get-name-line linea)))
-    (display "\n   Tipo de riel: ")
-    (display (get-rail-type-line linea))
-    (display "\n   Secciones:")
-    (map (lambda (a) (printear-seccion a)) (get-sections-line linea))
-    (display "\n")
+#|DOM: metro (TDA subway) X funcion de costo currificada (f(x))
+REC:metro (TDA subway)
+Funcion que modifica los costos de todas las secciones de de todas las lineas de un TDA subway, y lo retorna|#
+(define (subway-rise-section-cost metro funct)
+  ;DOM: secciones (lista de TDAs section) X funcion de costo currificada
+  ;REC: secciones (lista TDAs section)
+  ;Funcion que mediante una funcion de entrada modifica los costos de todos los elementos de una lista de secciones
+  (define (mod-cost-lista-secciones secciones fun)
+    (map (lambda (a)(section (get-station1-section a) (get-station2-section a)
+                             (get-distance-section a) (fun (get-cost-section a)))) secciones)
     )
 
-  (map (lambda (a)(printear-linea a)) lineas)
+  ;DOM: lineas (lista de TDAs line) X funcion de costo currificada
+  ;REC: lineas (lista de TDAs line)
+  ;Funcion que retorna una lista de lineas dado que se modificaron los costos de todas las secciones de cada linea
+  (define (mod-cost-secciones-en-line lineas fun)
+    (map (lambda (c) (list (get-id-line c) (get-name-line c) (get-rail-type-line c); se usa list en vez del constructor line para evitar errores de que el elemento sea una lista dentro de otra lista,evitamos ese error
+                           (mod-cost-lista-secciones (get-sections-line c) fun))) lineas)
+    )
+
+  (list (get-id-subway metro) (get-name-subway metro) (get-trains-subway metro)
+        (mod-cost-secciones-en-line (get-lines-subway metro) funct)
+        (get-drivers-subway metro) (get-line-trains-subway metro) (get-routes-subway metro))
   )
 
 
@@ -384,5 +346,46 @@ Funcion que imprime en panta todos los elementos de un metro TDA subway. Utiliza
 
 
 
+#|DOM: metro (TDA subway) X nombre de la estacion (string) X tiempo en segundos (numero)
+REC: metro (subway)
+Sin recursion
+Funcion que modifica el tiempo de parada de una estacion|#
+
+;idea , buscar entre las lineas las estaciones (buscar en todas porque puede ser estacion combinacion)
+;y modificar el tiempo
+;(define (subway-set-station-stoptime metro name-st time)
+;  )
 
 
+#|DOM: secciones (lista de TDAs section) X nombre estacion (string) X nuevo tiempo en segundos (numero)
+REC: secciones (lista de TDAs section)
+No recursion
+Funcion que modifica el tiempo de parada de un estacion especifica buscada por su nombre en una lista de secciones|#
+(define (mod-time-en-secciones secciones name-st new-time)
+  (map (lambda (s-act) (cond
+                         [(eqv? name-st (get-name-station (get-station1-section s-act)))
+                              (list (station (get-id-station (get-station1-section s-act)) name-st
+                                             (get-type-station-station (get-station1-section s-act)) new-time
+                                             );con esto construimos un nuevo elemento station1 con el nuevo tiempo
+                                    (get-station2-section s-act) (get-distance-section s-act)
+                                    (get-cost-section s-act))];se crea un elemento section actualizado
+                         
+                         [(eqv? name-st (get-name-station (get-station2-section s-act)))
+                              (list (get-station2-section s-act)
+                                    (station (get-id-station (get-station2-section s-act)) name-st
+                                             (get-type-station-station (get-station2-section s-act)) new-time
+                                             );con esto construimos un nuevo elemento station2
+                                    (get-distance-section s-act) (get-cost-section s-act))];elemento section actualizado
+
+                         [else s-act];caso en que al comparar nombres sean distintos, se agrega el mismo section
+                         )
+         ) secciones)
+  )
+
+
+;ahora tengo que mapear esta funcion en la lista de lineas, no sea weon
+; y despues construyo un nuevo subway
+
+
+
+;(mod-time-en-secciones (get-sections-line l2e) "Rondizzoni" 400)
