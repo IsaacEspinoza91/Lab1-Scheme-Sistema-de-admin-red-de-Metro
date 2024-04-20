@@ -348,44 +348,165 @@ Funcion que modifica los costos de todas las secciones de de todas las lineas de
 
 #|DOM: metro (TDA subway) X nombre de la estacion (string) X tiempo en segundos (numero)
 REC: metro (subway)
-Sin recursion
+Sin recursion, y ademas utiliza funciones propias auxiliares
 Funcion que modifica el tiempo de parada de una estacion|#
+(define (subway-set-station-stoptime metro name-st time)
 
-;idea , buscar entre las lineas las estaciones (buscar en todas porque puede ser estacion combinacion)
-;y modificar el tiempo
-;(define (subway-set-station-stoptime metro name-st time)
-;  )
-
-
-#|DOM: secciones (lista de TDAs section) X nombre estacion (string) X nuevo tiempo en segundos (numero)
-REC: secciones (lista de TDAs section)
-No recursion
-Funcion que modifica el tiempo de parada de un estacion especifica buscada por su nombre en una lista de secciones|#
-(define (mod-time-en-secciones secciones name-st new-time)
-  (map (lambda (s-act) (cond
-                         [(eqv? name-st (get-name-station (get-station1-section s-act)))
-                              (list (station (get-id-station (get-station1-section s-act)) name-st
-                                             (get-type-station-station (get-station1-section s-act)) new-time
-                                             );con esto construimos un nuevo elemento station1 con el nuevo tiempo
-                                    (get-station2-section s-act) (get-distance-section s-act)
-                                    (get-cost-section s-act))];se crea un elemento section actualizado
+  #|DOM: secciones (lista de TDAs section) X nombre estacion (string) X nuevo tiempo en segundos (numero)
+  REC: secciones (lista de TDAs section)
+  No recursion
+  Funcion que modifica el tiempo de parada de un estacion especifica buscada por su nombre en una lista de secciones|#
+  (define (mod-time-en-secciones secciones name-st new-time)
+    (map (lambda (s-act) (cond
+                           [(eqv? name-st (get-name-station (get-station1-section s-act)))
+                                (list (station (get-id-station (get-station1-section s-act)) name-st
+                                               (get-type-station-station (get-station1-section s-act)) new-time
+                                               );con esto construimos un nuevo elemento station1 con el nuevo tiempo
+                                      (get-station2-section s-act) (get-distance-section s-act)
+                                      (get-cost-section s-act))];se crea un elemento section actualizado
                          
-                         [(eqv? name-st (get-name-station (get-station2-section s-act)))
-                              (list (get-station2-section s-act)
-                                    (station (get-id-station (get-station2-section s-act)) name-st
-                                             (get-type-station-station (get-station2-section s-act)) new-time
-                                             );con esto construimos un nuevo elemento station2
-                                    (get-distance-section s-act) (get-cost-section s-act))];elemento section actualizado
+                           [(eqv? name-st (get-name-station (get-station2-section s-act)))
+                                (list (get-station1-section s-act)
+                                      (station (get-id-station (get-station2-section s-act)) name-st
+                                               (get-type-station-station (get-station2-section s-act)) new-time
+                                               );con esto construimos un nuevo elemento station2
+                                      (get-distance-section s-act) (get-cost-section s-act))];elemento section actualizado
+                           [else s-act];caso en que al comparar nombres sean distintos, se agrega el mismo section
+                          )
+           ) secciones)
+    )
 
-                         [else s-act];caso en que al comparar nombres sean distintos, se agrega el mismo section
-                         )
-         ) secciones)
+  #|DOM: lineas (lista TDAs line) X nombre estacion (string) X nuevo tiempo en segundos (numero)
+  REC: lineas (lista de TDAs line)
+  Funcion que modifica el tiempo de parada de un estacion especifica dentro de una lista de lineas|#
+  (define (mod-time-en-lineas lineas name-st new-time)
+    (map (lambda (l-act)(list (get-id-line l-act) (get-name-line l-act) (get-rail-type-line l-act)
+                              (mod-time-en-secciones (get-sections-line l-act) name-st new-time)))
+         lineas)
+    )
+
+  (list (get-id-subway metro) (get-name-subway metro) (get-trains-subway metro)
+        (mod-time-en-lineas (get-lines-subway metro) name-st time)
+        (get-drivers-subway metro) (get-line-trains-subway metro) (get-routes-subway metro))
   )
 
 
-;ahora tengo que mapear esta funcion en la lista de lineas, no sea weon
-; y despues construyo un nuevo subway
 
 
 
-;(mod-time-en-secciones (get-sections-line l2e) "Rondizzoni" 400)
+
+
+#|DOM: metro (subway) X id tren (entero) X id linea (entero)
+REC: metro (subway)
+Sin recursividad
+Funcion que asigna un tren a una linea dentro del subway. Si ya existen metros asociados a una linea, se agregan junto a los previos.
+     En el caso de que los trenes y/o lineas ingresadas no esten en el subway, se retorna el mismo subway sin cambios|#
+(define (subway-assign-train-to-line metro id-tren id-linea)
+
+  ;DOM:lista de line-trains (lista line-trains de TDA subway) X id linea (entero) X id tren (entero)
+  ;Funcion que agrega trenes a una linea existente en el apartado de line-trains del TDA subway
+  (define (agregar-trenes-a-linea-existente list-line-trains id-line id-train)
+    (map (lambda (act) (if (eqv? id-line (car act))  (cons id-line (list (append (cadr act) (list id-train))))     act  ))   list-line-trains)
+    )
+
+  ;DOM: metro (subway) X id tren (entero) X id linea (entero)            REC: bool
+  ;Funcion que determina la compatibilidad entre un tren y una linea, mediante si son iguales los tipos de riel
+  (define (compatible-train-line sub id-train id-line)
+    (eqv? (get-rail-type-train (filter  (lambda (a) (eqv? (get-id-train a) id-train))  (get-trains-subway sub)));obtenemos el tipo de riel del tren
+          (get-rail-type-line  (filter  (lambda (e) (eqv? (get-id-line  e) id-line ))  (get-lines-subway sub))));obtenemos el tipo de riel de la linea
+    )
+  
+  ;        condicion que la linea ya exista en el metro y que el tren ya exista en el metro
+  (if (and (not (boolean? (member id-linea  (map (lambda (s) (get-id-line s))   (get-lines-subway metro))   )))
+           (not (boolean? (member id-tren   (map (lambda (g) (get-id-train g))  (get-trains-subway metro))  )))
+           (compatible-train-line metro id-tren id-linea))
+
+      (if (boolean? (member id-linea (map (lambda (a)(car a))(get-line-trains-subway metro)))  )
+                     ;condicion de la linea no tiene trenes asociados, ergo de que no este en el antepenultimo elemtno
+
+          ;condicion de que la linea no tenia trenes asignados, de que no estaba en la lista N6
+          (list (get-id-subway metro) (get-name-subway metro) (get-trains-subway metro)
+                (get-lines-subway metro) (get-drivers-subway metro)
+                (append (get-line-trains-subway metro) (list (cons id-linea (list (list id-tren)))));utilizamos doble list porque al usar solo una lo toma como el cdr del cons y se pierde el formato deseado
+                (get-routes-subway metro))
+
+          ;caso en que la linea si tiene trenes
+          (if ;#f;condicion tren ya esta asociado a la linea
+              (not (boolean?  (member id-tren  (cadr (car (filter (lambda (l-tr) (eqv? id-linea  (car l-tr))) (get-line-trains-subway metro))))    )))
+              metro;se devuleve el mismo metro
+
+             ;caso de que el tren no estaba en la linea, se hace append del en el id del tren anterior
+             (list (get-id-subway metro) (get-name-subway metro) (get-trains-subway metro)
+                  (get-lines-subway metro) (get-drivers-subway metro)
+                  (agregar-trenes-a-linea-existente (get-line-trains-subway metro) id-linea id-tren)
+                  (get-routes-subway metro))
+              )
+          )
+      
+      metro;en caso de que la linea y/o tren no existan, se retorna el metro tal cual
+      )
+  )
+
+
+
+
+
+
+
+
+#|DOM: metro (subway) X id conductor (entero) X id tren (entero) X hora de partida (string en formato HH:MM:SS de 24 hrs)
+      X nombre de estacion de inicio (string) X nombre estacion de llegada (string)
+REC: metro (subway)
+Funcion que asigna un conductor a un tren en un horario de salida considerando estacion de partida y llegada|#
+;debo verificar si esta el tren, la estacion en la linea, si esta el driver
+;ademas si el conductor conduce en la nueva, ver tipo de riel
+(define (subway-assign-driver-to-train metro id-driver id-tren time-i st-inicial st-final)
+
+  ;    condicion de que el driver y el tren esten en el subway, agregar condicion compatibilidad de maker con el de la linea
+  (if (and (not (boolean? (member id-driver  (map (lambda (s) (get-id-driver s))   (get-drivers-subway metro))  )))
+           (not (boolean? (member id-tren    (map (lambda (g) (get-id-train g))    (get-trains-subway  metro))  )))
+           ;(eqv? (get-maker-train-driver (filter (lambda (s) (= id-driver (get-id-driver s)))   (get-drivers-subway metro)))
+           ;      (get-maker-train-driver (filter (lambda (s) (= id-driver (get-id-driver s)))   (get-lines-subway metro)))
+           ;      )
+           )
+
+      ;usamos alguna funcion que agrega un nuevo elemento a la lista, sin importanr que ya existan previos o
+      ; que sea nula o que esten repetidos, despues ver c[omo implementar esta condicion
+      (list (get-id-subway metro) (get-name-subway metro) (get-trains-subway metro)
+            (get-lines-subway metro) (get-drivers-subway metro)
+            (get-line-trains-subway metro)
+            (append (get-routes-subway metro) (list (list id-driver id-tren time-i st-inicial st-final) ))
+            )
+
+      metro;caso de que no este el driver y/o el tren, se devuelve el subway sin cambios
+      )
+  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

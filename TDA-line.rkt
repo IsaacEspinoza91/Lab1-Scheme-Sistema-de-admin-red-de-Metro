@@ -9,6 +9,8 @@
 ;TDA line, abstraccion de una linea de metro como una lista de elementos
 ;Representacion: lista con elementos (id de la linea - nombre de linea
 ;              - tipo de vias de tren - lista de secciones entre estaciones* (sin aridad de secciones, pueden ser varias)
+;Como observacion, la lista de secciones del TDA line, tiene la disposicion de secciones determinado por el orden de ingreso de estas,
+;    por lo que, en el caso de linea normal, la primera y ultima seccion en sus estaciones extremas deben ser terminales para que se considere una linea correctamente construida
 
 
 
@@ -36,15 +38,62 @@ funcion que crea un elemento del TDA line |#
 
 #|DOM: linea de metro (line)
 REC: bool
-Recursion de cola. La funcion sections-line? utiliza la recursion de cola para verificar si los elementos pertenecen cada uno al TDA section
-Funcion que verifica si un elemento es del tipo TDA line |#
+Recursion de cola. La funcion sections-line? utiliza la recursion de cola para verificar si los elementos pertenecen cada uno al TDA section,
+    y la funcion all-station-conected usa recursion de cola para verificar que todas las estaciones esten conectadas
+Funcion que verifica si un elemento es del tipo TDA line, cumpliendo con varias condiciones de formato|#
 (define line? (lambda (linea)
                 (if (and (id-line? (car linea)) (name-line? (cadr linea))
-                         (rail-type-line? (caddr linea)) (sections-line? (cadddr linea)))
+                         (rail-type-line? (caddr linea)) (sections-line? (cadddr linea))
+                         (or (normal-line? (cadddr linea))  (circular-line? (cadddr linea)))
+                         (all-station-conected? (cadddr linea))
+                         )
                     #t
                     #f)
                 )
   )
+
+
+#|DOM: secciones (lista de TDAs section)
+REC: bool
+Funcion booleana que determina si las seciones de una linea cumplen para ser ser lina normal, esto quiere decir que sus estaciones terminales
+   son tipo t y que se puede recorrer toda la linea por las secciones
+Se usa en line?|#
+(define (normal-line? secciones)
+  (and (eqv? (get-type-station-station (get-station1-section (first secciones))) t);primera estacion de la primera seccion de la linea es tipo t
+       (eqv? (get-type-station-station (get-station2-section (last secciones))) t);segunda estacion de la ultima seccion de la linea es tipo t
+      )
+  )
+
+
+#|DOM:secciones (lista de TDAs section)
+REC: bool
+Funcion booleana que determina si las secciones de una linea cumplen con el criterio para ser linea circular, es decir, la primera y ultima estacion son la misma.
+Se usa en line?|#
+(define (circular-line? secciones)
+  (eqv? (get-name-station (get-station1-section (first secciones)));nombre de la estacion 1 de la primera seccion de la linea 
+        (get-name-station (get-station2-section (last  secciones)));nombre de la estacion 2 de la ultima seccion de la linea
+      )
+  )
+
+
+#|DOM: secciones (lista de TDAs section)
+REC: bool
+Recursion de cola
+Funcion que verifica que de una estaciones se puede llegar a todas las demas estaciones de una lista de secciones, recordar que la lista de
+   secciones tiene las secciones ordenadas en un sentido de recorrido
+Se usa en line?|#
+(define (all-station-conected? secciones)
+  (if (empty? (cdr secciones))
+      #t
+      (if (eqv? (get-name-station (get-station2-section (car secciones)));comparacion entre nombre de la seccion anterior y la actual (station2 y station1)
+                (get-name-station (get-station1-section (cadr secciones)))
+                )
+          (all-station-conected? (cdr secciones))
+          #f
+          )
+      )
+  )
+
 
 #|DOM: linea de metro (line)
 REC: bool
@@ -290,7 +339,7 @@ Funcion que retorna el costo monetario del trayecto entre dos estaciones|#
 #|DOM: linea de metro (TDA line) X elemento seccion entre estaciones(TDA section)
  REC: (TDA line)
 Recursividad natural; se usa recursion natural para crear la lista de TDAs sections, ademas se hace
-     uso de la funcion externa is-section-in-sections-line? que utiliza recursion de cola para verificar que no existan secciones repetidas en la lista
+     uso de la funcion externa is-section-in-sections-line? que utiliza recursion natural para verificar que no existan secciones repetidas en la lista
 Funcion que agrega una seccion (TDA section) entre estaciones a un TDA line|#
 (define line-add-section (lambda (linea nueva-seccion)
                            (define fn-aux22 (lambda (secciones new-section);notar recursion de stack
@@ -316,18 +365,19 @@ Funcion que agrega una seccion (TDA section) entre estaciones a un TDA line|#
 
 #|DOM: lista de TDAs sections (lista sections) X elemento section buscado (TDA section)
 REC: bool
-Recursion de cola
+Recursion de natural
 Funcion booleana que indica si un TDA section ya esta dentro de una lista de TDAs sections
 Metodo: comparacion de nombres
 Se utiliza en la funcion line-add-section|#
-(define (is-section-in-sections-line? secciones seccion-buscada) ;en esta funcion deberia agregar la condicion de confirmar ademas la ID de cada seccion en sections
+(define (is-section-in-sections-line? secciones seccion-buscada) 
         (if (empty? secciones)
             #f; caso no esta repetida la seccion-buscada en secciones
             (if (eqv? (get-name-station (get-station1-section (car secciones)))
                       (get-name-station (get-station1-section seccion-buscada))
                       )
                 #t
-                (is-section-in-sections-line? (cdr secciones) seccion-buscada)
+                (or #f (is-section-in-sections-line? (cdr secciones) seccion-buscada))
+                ;es un poco innesario la operacion logica, pero cumple la recursion natural al dejar valores pendientes por computar
                 )
             )
   )
