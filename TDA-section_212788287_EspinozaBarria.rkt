@@ -1,5 +1,5 @@
 #lang racket
-(require "TDA-station.rkt")
+(require "TDA-station_212788287_EspinozaBarria.rkt")
 (provide section section? get-distance-section get-cost-section get-station1-section get-station2-section)
 
 ;TDA section, abstraccion de una seccion/enlace/tramo entre dos estaciones de metro como una lista de elementos

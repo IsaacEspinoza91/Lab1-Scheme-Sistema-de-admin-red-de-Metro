@@ -1,9 +1,9 @@
 #lang racket
-(require "TDA-pcar.rkt")
-(require "TDA-section.rkt")
-(require "TDA-station.rkt")
-(require "TDA-type-station.rkt")
-(require "TDA-line.rkt")
+(require "TDA-pcar_212788287_EspinozaBarria.rkt")
+(require "TDA-section_212788287_EspinozaBarria.rkt")
+(require "TDA-station_212788287_EspinozaBarria.rkt")
+(require "TDA-type-station_212788287_EspinozaBarria.rkt")
+(require "TDA-line_212788287_EspinozaBarria.rkt")
 (provide train train? train-add-car train-remove-car train-capacity get-id-train get-maker-train get-rail-type-train get-speed-train
          get-station-stay-time-train)
 

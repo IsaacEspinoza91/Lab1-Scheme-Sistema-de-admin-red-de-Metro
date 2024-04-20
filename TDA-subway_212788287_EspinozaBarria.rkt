@@ -1,11 +1,14 @@
 #lang racket
-(require "TDA-pcar.rkt")
-(require "TDA-section.rkt")
-(require "TDA-station.rkt")
-(require "TDA-type-station.rkt")
-(require "TDA-line.rkt")
-(require "TDA-train.rkt")
-(require "TDA-driver.rkt")
+(require "TDA-pcar_212788287_EspinozaBarria.rkt")
+(require "TDA-section_212788287_EspinozaBarria.rkt")
+(require "TDA-station_212788287_EspinozaBarria.rkt")
+(require "TDA-type-station_212788287_EspinozaBarria.rkt")
+(require "TDA-line_212788287_EspinozaBarria.rkt")
+(require "TDA-train_212788287_EspinozaBarria.rkt")
+(require "TDA-driver_212788287_EspinozaBarria.rkt")
+(provide subway subway-add-train subway-add-line subway-add-driver subway->string subway-rise-section-cost
+         subway-set-station-stoptime subway-assign-train-to-line subway-assign-driver-to-train)
+
 
 
 ;TDA subway, abstraccion de sistema de metro
@@ -23,19 +26,36 @@
 #|DOM: id (entero) X nombre metro (string)
 REC: metro (subway)
 Funcion que crea un elemento del TDA subway, el que es una lista de 7 elementos, en un inicio, el TDA
-     solo tendra 2 elementos (id y nombre), los demas seran agregamos posteriormente en otras funciones
-|#
+     solo tendra 2 elementos (id y nombre), los demas seran agregamos posteriormente en otras funciones|#
 (define subway (lambda (id nombre)(list id nombre null null null null null)))
 
 
 
 
 ;FUNCION DE PERTENECIA
+#|DOM: metro (subway)
+REC: bool
+Funcion que determina si los elementos de un TDA subway son compatibles solo en tipo de dato, no verifica si efectivamente son ej drivers, lines, etc|#
 (define subway-without-all-elements? (lambda (metro)
                                     (and (integer? (car metro)) (string? (cadr metro)) (list? (caddr metro))
                                          (list? (cadddr metro)) (list? (cadddr (cdr metro)))
                                          (list? (cadddr (cddr metro))) (list? (cadddr (cdddr metro))))
                                     )
+  )
+
+
+#|DOM: metro (TDA subway)
+REC: bool
+Funcion que determina si un elemento pertenece al TDA suwbay|#
+(define (subway? metro)
+  (and (integer? (get-id-subway metro)) (string? (get-name-subway metro))
+       (null? (filter (lambda (q) (not (train? q))) (get-trains-subway metro)));en caso de que no sean trenes, se filtra y se agrega a la lista que ya no seria null y se rompe la condicion
+       (null? (filter (lambda (z) (not (line? z)))  (get-lines-subway metro)))
+       (null? (filter (lambda (m) (not (driver? m)))(get-drivers-subway metro)))
+       ;no se verifican line-trains porque cuando son agregadas se verifica su validez antes
+       (null? (filter (lambda (v) (not (and (integer? (car v)) (integer? (cadr v)) (string? (caddr v))
+                                            (string? (cadddr v)) (string? (last v))))   ) (get-routes-subway metro)))
+       )
   )
 
 
@@ -166,6 +186,16 @@ Funicion que crea un TDA subway pero con una nuevo elemento routes|#
 
 ;OTRAS FUNCIONES
 
+;DOM: (list) X (list)               REC: (list)
+;Funcion que compara l2 con l1 y retorna l2 sin las ocurrencias de l1 en el, util para no agregar elemento repetidos
+;Se usa en las tres funciones siguientes
+(define (aux-no-repe l1 l2)
+  (filter (lambda (act) (boolean? (member act l1)))   l2)
+  )
+
+
+
+
 #|DOM: metro (subway) X trenes+ (TDAs train+ ) (puede ser 1 o mas)
 REC: metro (subway)
 Recursion natural
@@ -181,7 +211,8 @@ Funcion que agrega los trenes del argumento al parametro de trenes dentro del su
                            
                            (if (subway-without-all-elements? metro)
                                (list (get-id-subway metro) (get-name-subway metro)
-                                     (fn-aux (get-trains-subway metro) trenes) (get-lines-subway metro)
+                                     (fn-aux (get-trains-subway metro)        (aux-no-repe (get-trains-subway metro)  (filter (lambda (d) (train? d)) trenes)  ));se realiza filter para verificar que solo se agregen trenes validos
+                                     (get-lines-subway metro)
                                      (get-drivers-subway metro) (get-line-trains-subway metro)
                                      (get-routes-subway metro))
                                null)
@@ -196,7 +227,7 @@ Funcion que agrega las lineas del argumento al parametro de lineas del subway|#
 (define subway-add-line (lambda (metro . lineas)
                            (if (subway-without-all-elements? metro)
                                (list (get-id-subway metro) (get-name-subway metro)
-                                     (get-trains-subway metro) (append (get-lines-subway metro) lineas)
+                                     (get-trains-subway metro) (append (get-lines-subway metro)   (aux-no-repe  (get-lines-subway metro) (filter (lambda (act) (line? act)) lineas) ));se realiza filtro para verificar que se agregen efectivamente lineas
                                      (get-drivers-subway metro) (get-line-trains-subway metro)
                                      (get-routes-subway metro))
                                null)
@@ -213,9 +244,10 @@ Funcion que agrega los conductores del argumento al parametro de drivers del sub
                            (if (subway-without-all-elements? metro)
                                (list (get-id-subway metro) (get-name-subway metro)
                                      (get-trains-subway metro) (get-lines-subway metro)
-                                     (append (get-drivers-subway metro) conductores) (get-line-trains-subway metro)
-                                     (get-routes-subway metro))
-                               null)
+                                     (append (get-drivers-subway metro)        (aux-no-repe (get-drivers-subway metro)     (filter (lambda (a) (driver? a)) conductores)))
+                                     (get-line-trains-subway metro)(get-routes-subway metro))
+                               null
+                               )
                            )
   )
 
@@ -452,8 +484,6 @@ Funcion que asigna un tren a una linea dentro del subway. Si ya existen metros a
 
 
 
-
-
 #|DOM: metro (subway) X id conductor (entero) X id tren (entero) X hora de partida (string en formato HH:MM:SS de 24 hrs)
       X nombre de estacion de inicio (string) X nombre estacion de llegada (string)
 REC: metro (subway)
@@ -481,23 +511,6 @@ Funcion que asigna un conductor a un tren en un horario de salida considerando e
       metro;caso de que no este el driver y/o el tren, se devuelve el subway sin cambios
       )
   )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

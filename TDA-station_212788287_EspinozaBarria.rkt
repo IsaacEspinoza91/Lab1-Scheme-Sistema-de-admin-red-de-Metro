@@ -1,5 +1,5 @@
 #lang racket
-(require "TDA-type-station.rkt")
+(require "TDA-type-station_212788287_EspinozaBarria.rkt")
 (provide station station? get-id-station get-name-station get-type-station-station get-time-stop-station)
 
 ;TDA station, abstraccion de una estacion de metro como una lista

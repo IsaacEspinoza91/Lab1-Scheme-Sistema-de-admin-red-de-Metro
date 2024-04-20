@@ -1,7 +1,7 @@
 #lang racket
-(require "TDA-section.rkt")
-(require "TDA-station.rkt")
-(require "TDA-type-station.rkt")
+(require "TDA-section_212788287_EspinozaBarria.rkt")
+(require "TDA-station_212788287_EspinozaBarria.rkt")
+(require "TDA-type-station_212788287_EspinozaBarria.rkt")
 (provide line line? line-length line-section-length line-cost line-section-cost line-add-section
          get-id-line get-name-line get-rail-type-line get-sections-line)
 
