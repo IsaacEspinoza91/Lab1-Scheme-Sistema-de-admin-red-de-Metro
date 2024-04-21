@@ -6,7 +6,7 @@
 (require "TDA-line_212788287_EspinozaBarria.rkt")
 (require "TDA-train_212788287_EspinozaBarria.rkt")
 (require "TDA-driver_212788287_EspinozaBarria.rkt")
-(provide subway subway-add-train subway-add-line subway-add-driver 1subway->string subway-rise-section-cost
+(provide subway subway-add-train subway-add-line subway-add-driver subway->string subway-rise-section-cost
          subway-set-station-stoptime subway-assign-train-to-line subway-assign-driver-to-train)
 
 
@@ -260,8 +260,12 @@ Funcion que agrega los conductores del argumento al parametro de drivers del sub
 
 
 
-
-(define (sw-st metro)
+#|DOM: metro (subway)
+REC: null
+Recursion natural
+Funcion que retorna un string con todos los elementos de un metro TDA subway. Utiliza varias funciones
+   auxiliares que estan encapsuladas dentro de la misma|#
+(define (subway->string metro)
 
   ;Dom lista de trenes (list TDAs train)   REC: string
   (define (string-trenes list-trenes)
@@ -288,11 +292,11 @@ Funcion que agrega los conductores del argumento al parametro de drivers del sub
 
 
 
-  ;DOM: lineas (lista de TDAs line)   REC: string
+  ;DOM: lineas (lista de TDAs line)   REC: string  Recursion natural
   (define (string-lineas list-lineas)
 
     
-    ;DOM: linea (TDA line)    REC: string
+    ;DOM: linea (TDA line)    REC: string    Recursion natural
     (define (string-linea linea)
 
       ;DOM: seccion (TDA section)     REC:string
@@ -310,7 +314,7 @@ Funcion que agrega los conductores del argumento al parametro de drivers del sub
           (number->string (get-cost-section seccion))  "\n"
           )
         )
-
+      ;DOM: (lista de secciones)    REC: string     Recursion natural
       (define (aux-string-line secciones)
         (if (empty? secciones) "\n"
           (string-append
@@ -353,135 +357,15 @@ Funcion que agrega los conductores del argumento al parametro de drivers del sub
     )
 
     
-
-
-
-  
-
-
-
   
   (string-append
      "\n\nDatos del sistema de metro\n ID: " (number->string (get-id-subway metro))
      "\n Nombre: " (get-name-subway metro)  "\n\n"
-      "Trenes:"
-     (string-trenes (get-trains-subway metro))
-      "\nLineas:"
-     (string-lineas (get-lines-subway metro))
-      "\nConductores:"
-     (string-drivers (get-drivers-subway metro))
-
-     
+      "Trenes:" (string-trenes (get-trains-subway metro))
+      "\nLineas:" (string-lineas (get-lines-subway metro))
+      "\nConductores:" (string-drivers (get-drivers-subway metro))
      )
-
-  
   )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#|DOM: metro (subway)
-REC: null
-Funcion que imprime en panta todos los elementos de un metro TDA subway. Utiliza varias funciones
-   auxiliares que estan encapsuladas dentro de la misma|#
-(define (1subway->string metro)
-
-  ;DOM: conductores (lista de TDAs driver)      REC: no
-  (define (printear-drivers drivers)
-    ;DOM: conductor (TDA driver)     REC: no
-    (define (printear-conductor conduc)
-      (display "\n   Id conductor: ")
-      (display (number->string (get-id-driver conduc)))
-      (display "\n   Nombre: ")
-      (display (get-name-driver conduc))
-      (display "\n   Fabricante de trenes que conduce: ")
-      (display (get-maker-train-driver conduc))
-      (display "\n")
-      )
-    (map (lambda (s) (printear-conductor s)) drivers)
-    )
-
-  ;DOM: trenes (lista de TDAs train)    REC: no
-  (define (printear-trenes list-trains)
-    ;DOM: tren (TDA train)     REC: no
-    (define (printear-tren tren)
-      (display "\n   Id tren: ")
-      (display (number->string (get-id-train tren)))
-      (display "\n   Fabricante: ")
-      (display (get-maker-train tren))
-      (display "\n   Tipo de riel: ")
-      (display (get-rail-type-train tren))
-      (display "\n   Rapidez: ")
-      (display (number->string (get-speed-train tren)))
-      (display (string-append "\n   Tiempo de espera por estacion: "
-                            (number->string (get-station-stay-time-train tren))
-                            " minutos\n"))
-      )
-    (map (lambda (a) (printear-tren a)) list-trains)
-    )
-
-  ;DOM: lineas (lista de TDAs line)   REC: no
-  (define (printear-lineas lineas)
-    ;DOM: linea (TDA line)    REC: no
-    (define (printear-linea linea)
-      ;DOM: seccion (TDA section)     REC:no
-      (define (printear-seccion seccion)
-        (display "\n      Estacion 1: ")
-        (display (string-append (get-name-station (get-station1-section seccion))
-                         "  Tipo: " (get-type-station-station (get-station1-section seccion))))
-        (display "\n      Estacion 2: ")
-        (display (string-append (get-name-station (get-station2-section seccion))
-                         "  Tipo: " (get-type-station-station (get-station2-section seccion))))
-        (display "\n      Distancia entre estaciones: ")
-        (display (number->string (get-distance-section seccion)))
-        (display "km\n      Costo monetario: ")
-        (display (number->string (get-cost-section seccion)))
-        (display "\n")
-        )
-
-      (display "\n   Id linea: ")
-      (display (number->string (get-id-line linea)))
-      (display (string-append "\n   Nombre: " (get-name-line linea)))
-      (display "\n   Tipo de riel: ")
-      (display (get-rail-type-line linea))
-      (display "\n   Secciones:")
-      (map (lambda (a) (printear-seccion a)) (get-sections-line linea))
-      (display "\n")
-      )
-    (map (lambda (a)(printear-linea a)) lineas)
-    )
-  
-  (display "\n\nDatos del sistema de metro\n")
-  (display (string-append "Nombre: " (get-name-subway metro)  "\n\n"))
-  (display "Trenes:")
-  (printear-trenes (get-trains-subway metro))
-  (display "\nLineas:")
-  (printear-lineas (get-lines-subway metro))
-  (display "\nConductores:")
-  (printear-drivers (get-drivers-subway metro))
-  null; devolvemos un null al finalizar de imprimir los datos del subway
-  )
-
-
-
-
-
-
-
-
-
-
 
 
 
