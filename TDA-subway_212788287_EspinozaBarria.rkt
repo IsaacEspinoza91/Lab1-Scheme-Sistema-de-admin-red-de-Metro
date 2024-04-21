@@ -6,7 +6,7 @@
 (require "TDA-line_212788287_EspinozaBarria.rkt")
 (require "TDA-train_212788287_EspinozaBarria.rkt")
 (require "TDA-driver_212788287_EspinozaBarria.rkt")
-(provide subway subway-add-train subway-add-line subway-add-driver subway->string subway-rise-section-cost
+(provide subway subway-add-train subway-add-line subway-add-driver 1subway->string subway-rise-section-cost
          subway-set-station-stoptime subway-assign-train-to-line subway-assign-driver-to-train)
 
 
@@ -198,10 +198,11 @@ Funicion que crea un TDA subway pero con una nuevo elemento routes|#
 
 #|DOM: metro (subway) X trenes+ (TDAs train+ ) (puede ser 1 o mas)
 REC: metro (subway)
-Recursion natural
-Funcion que agrega los trenes del argumento al parametro de trenes dentro del subway de modo que este tenga o no otros trenes en un inicio,
-     usa la funcion fn-aux para cumplir el requisito de implementacion de emplear algun tipo de recursividad|#
+Recursion natural, por su facilidad. La funcion fn-aux emplea recursividad, para cumplir el requisisto de implementacion
+Funcion que agrega los trenes del argumento al parametro de trenes dentro del subway de modo que este tenga o no otros trenes en un inicio.
+    Ademas no considera los elementos repetidos.|#
 (define subway-add-train (lambda (metro . trenes)
+                           ;DOM: (lista) X (lista)         REC: (lista)        Recursion natural
                            ;funcion que usa la recursion natural para retornar la union de dos listas de parametros
                            (define (fn-aux lista1 lista2)
                              (cond
@@ -223,7 +224,7 @@ Funcion que agrega los trenes del argumento al parametro de trenes dentro del su
 #|DOM: metro (subway) X lineas+ (TDAs line+) (puede ser 1 o mas)
 REC: metro (subway)
 NO RECURSION a diferencia de subway-add-train
-Funcion que agrega las lineas del argumento al parametro de lineas del subway|#
+Funcion que agrega las lineas del argumento al parametro de lineas del subway, sin considerar los elementos repetidos|#
 (define subway-add-line (lambda (metro . lineas)
                            (if (subway-without-all-elements? metro)
                                (list (get-id-subway metro) (get-name-subway metro)
@@ -239,7 +240,7 @@ Funcion que agrega las lineas del argumento al parametro de lineas del subway|#
 #|DOM: metro (subway) X conductores+ (TDAs driver+) (puede ser 1 o mas)
 REC: metro (subway)
 SIN RECURSION
-Funcion que agrega los conductores del argumento al parametro de drivers del subway|#
+Funcion que agrega los conductores del argumento al parametro de drivers del subway, sin elementos repetidos|#
 (define subway-add-driver (lambda (metro . conductores)
                            (if (subway-without-all-elements? metro)
                                (list (get-id-subway metro) (get-name-subway metro)
@@ -252,11 +253,149 @@ Funcion que agrega los conductores del argumento al parametro de drivers del sub
   )
 
 
+
+
+
+
+
+
+
+
+(define (sw-st metro)
+
+  ;Dom lista de trenes (list TDAs train)   REC: string
+  (define (string-trenes list-trenes)
+    ;DOM: tren (TDA train)     REC: string
+    (define (string-tren tren)
+      (string-append
+         "\n   Id tren: "
+         (number->string (get-id-train tren))
+         "\n   Fabricante: "
+         (get-maker-train tren)
+         "\n   Tipo de riel: "
+         (get-rail-type-train tren)
+         "\n   Rapidez: "
+         (number->string (get-speed-train tren))
+         (string-append "\n   Tiempo de espera por estacion: " (number->string (get-station-stay-time-train tren))  " minutos\n")        
+         )
+      )
+
+    (if (empty? list-trenes)
+        "\n"
+        (string-append  (string-tren (car list-trenes))  (string-trenes (cdr list-trenes)) )
+        )
+    )
+
+
+
+  ;DOM: lineas (lista de TDAs line)   REC: string
+  (define (string-lineas list-lineas)
+
+    
+    ;DOM: linea (TDA line)    REC: string
+    (define (string-linea linea)
+
+      ;DOM: seccion (TDA section)     REC:string
+      (define (string-seccion seccion)
+        (string-append
+          "\n      Estacion 1: "
+          (string-append (get-name-station (get-station1-section seccion))
+                           "  Tipo: " (get-type-station-station (get-station1-section seccion)))
+          "\n      Estacion 2: "
+          (string-append (get-name-station (get-station2-section seccion))
+                           "  Tipo: " (get-type-station-station (get-station2-section seccion)))
+          "\n      Distancia entre estaciones: "
+          (number->string (get-distance-section seccion))
+          "km\n      Costo monetario: "
+          (number->string (get-cost-section seccion))  "\n"
+          )
+        )
+
+      (define (aux-string-line secciones)
+        (if (empty? secciones) "\n"
+          (string-append
+            "\n   Id linea: "
+            (number->string (get-id-line linea))
+            "\n   Nombre: " (get-name-line linea)
+            "\n   Tipo de riel: " (get-rail-type-line linea)
+            "\n   Secciones:"
+            (if (empty? secciones) "\n"    (string-append (string-seccion (car secciones))   (aux-string-line (cdr secciones)))) 
+            )
+          )
+        )
+      (aux-string-line (get-sections-line linea))
+      )
+    
+    (if (empty? list-lineas)
+        "\n"
+        (string-append  (string-linea (car list-lineas)) "\n\n\n\n\n" (string-lineas (cdr list-lineas)) )
+        )
+
+    )
+
+
+
+
+   ;DOM: conductores (lista de TDAs driver)      REC: string
+  (define (string-drivers drivers)
+    ;DOM: conductor (TDA driver)     REC: string
+    (define (string-conductor conduc)
+      (string-append "\n   Id conductor: "
+        (number->string (get-id-driver conduc))
+        "\n   Nombre: "
+        (get-name-driver conduc)
+        "\n   Fabricante de trenes que conduce: "
+        (get-maker-train-driver conduc) "\n"
+        )
+      )
+    ;(map (lambda (s) (string-conductor s)) drivers)
+    (if (empty? drivers) "\n"  (string-append (string-conductor (car drivers))  (string-drivers (cdr drivers))))
+    )
+
+    
+
+
+
+  
+
+
+
+  
+  (string-append
+     "\n\nDatos del sistema de metro\n ID: " (number->string (get-id-subway metro))
+     "\n Nombre: " (get-name-subway metro)  "\n\n"
+      "Trenes:"
+     (string-trenes (get-trains-subway metro))
+      "\nLineas:"
+     (string-lineas (get-lines-subway metro))
+      "\nConductores:"
+     (string-drivers (get-drivers-subway metro))
+
+     
+     )
+
+  
+  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #|DOM: metro (subway)
 REC: null
 Funcion que imprime en panta todos los elementos de un metro TDA subway. Utiliza varias funciones
    auxiliares que estan encapsuladas dentro de la misma|#
-(define (subway->string metro)
+(define (1subway->string metro)
 
   ;DOM: conductores (lista de TDAs driver)      REC: no
   (define (printear-drivers drivers)
@@ -350,6 +489,7 @@ Funcion que imprime en panta todos los elementos de un metro TDA subway. Utiliza
 
 #|DOM: metro (TDA subway) X funcion de costo currificada (f(x))
 REC:metro (TDA subway)
+Sin recursion
 Funcion que modifica los costos de todas las secciones de de todas las lineas de un TDA subway, y lo retorna|#
 (define (subway-rise-section-cost metro funct)
   ;DOM: secciones (lista de TDAs section) X funcion de costo currificada
@@ -463,7 +603,7 @@ Funcion que asigna un tren a una linea dentro del subway. Si ya existen metros a
                 (get-routes-subway metro))
 
           ;caso en que la linea si tiene trenes
-          (if ;#f;condicion tren ya esta asociado a la linea
+          (if ;condicion tren ya esta asociado a la linea
               (not (boolean?  (member id-tren  (cadr (car (filter (lambda (l-tr) (eqv? id-linea  (car l-tr))) (get-line-trains-subway metro))))    )))
               metro;se devuleve el mismo metro
 

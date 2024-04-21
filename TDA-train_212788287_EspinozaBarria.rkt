@@ -18,13 +18,13 @@
 #|DOM: id (entero) X fabricante (string) X tipo de vias (strig) X rapidez del tren (real positivo)
        X tiempo del tren por estacion (real no negativo) X carros* (TDAs pcar*)
 REC: tren del metro (train)
-funcion que crea un elemento del TDA tren, (puede tener o no carros)|#
+Funcion que crea un elemento del TDA tren, (puede tener o no carros)|#
 (define train (lambda (id maker rail-type speed station-stay-time . carros)
                (if (and (id-train? id) (maker-train? maker) (rail-type-train? rail-type) (speed-train? speed) (station-stay-time-train? station-stay-time))
                         ;no se verifica carros porque puede que estos se agreges despues en otra funcion
                    (cond
                      [(empty? carros) (list id maker rail-type speed station-stay-time carros)]
-                     [(pcars-train? carros) (list id maker rail-type speed station-stay-time carros)]                                                    ;POSTERIORMENTE SE PUEDEN AGREGAR CONDICIONALES ACA PARA VERIFICAR QUE SEAN VALIDOS LOS PCARS, SOLO SERIA USAR LOS CONDICONALES DE TRAIN?
+                     [(pcars-train? carros) (list id maker rail-type speed station-stay-time carros)]
                      [else null])
                    null)
                )
@@ -36,7 +36,8 @@ funcion que crea un elemento del TDA tren, (puede tener o no carros)|#
 
 #|DOM: tren (TDA train)
 REC: bool
-Recursion de cola, las funciones auxiliares llamdas "compatible-model0pcars" y "compatible-type-pcars" utilizan recursividad de cola sin dejar estados pendientes
+Recursion de cola, debido al trabajo de listas con una posible gran cantidad de elementos, las funciones auxiliares llamadas "compatible-model0pcars" y
+      "compatible-type-pcars" utilizan recursividad de cola sin dejar estados pendientes
 Funcion que verifica si un elemento pertence al TDA train, respetando la compatibilidad de carros|#
 (define train? (lambda (tren)
                  (if (and (train-without-check-pcars? tren) (not (empty? (get-pcars-train tren)))
@@ -98,10 +99,10 @@ Funcion que determina si un elemento carros puede ser la lista de carros de un T
 (define pcars-train? (lambda (carros)
                        (if (empty? carros)
                            #f
-                           (if (pcar? (car carros))
+                           (if (and (pcar? (car carros)))
                                (if (empty? (cdr carros))
                                    #t
-                                   (pcars-train? (cdr carros)))                                                                    ;OJO ESTA FUNCION DEBERIA VERIFICAR TAMBIEN LA COMPATIBILIDAD DE CARROS
+                                   (pcars-train? (cdr carros)))
                                #f)
                            )
                        )
@@ -236,7 +237,7 @@ Funcion que crea un elemento TDA train a partir del elemento tren de los argumen
 REC: tren (TDA train)
 Funcion que crea un elemento TDA train a partir del elemento tren de los argumentos, pero con nuevos carros (lista de TDAs pcar)|#
 (define set-pcars-train (lambda (tren new-pcars)
-                          (if (train-without-check-pcars? tren)                                                                                                     ;OJO QUE PODRIA DESPUES HAY QUE PONER CONDCIONES PARA LA LISTA DE PCARS SEA VALIDA
+                          (if (train-without-check-pcars? tren)
                               (train (get-id-train tren) (get-maker-train tren) (get-rail-type-train tren) (get-speed-train tren)
                                   (get-station-stay-time-train tren) new-pcars)
                               null)
@@ -288,9 +289,11 @@ Funcion que determina si todos los carros de una lista de TDAs pcar son del mism
 
 #| DOM: tren (TDA train)
 REC: capacidad (real no negativo)
-Recursion natural
+Recursion natural, debido al calculo numerico simple
 Función que permite determinar la capacidad maxima de pasajeros en un tren valido|#
 (define train-capacity (lambda (tren)
+                    ;DOM: (lista de TDAs pcar)      REC: (real no negativo)        Recursion natural
+                    ;Funcion que calcula la capacidad de cada carro de una lista de carros y la suma
                     (define fn-aux (lambda (carros)
                                      (if (empty? carros)
                                          0
@@ -305,9 +308,11 @@ Función que permite determinar la capacidad maxima de pasajeros en un tren vali
 
 #|DOM: tren sin validar pcars, con o sin carros  (TDA train) X carro del tren (TDA pcar) X posicion para ingresar carro en la lista de TDAs pcar(entero no negativo)
 REC: tren sin validar pcars (TDA Train)
-Recursion natural
+Recursion natural, debido a la facilidad de uso ya que solo es agregar un elemento en una posicion de una lista
 Funcion que agrega un carro en una posicion especifica dentro de la lista de TDAs pcars de un tren (TDA train)|#
 (define train-add-car (lambda (tren carro posicion)
+                        ;DOM: (lista) X (elemento) X posicion (entero no negativo)        Rec: (lista)          Recursion natural
+                        ;Funcion que agrega un elemeento a una lista en una posicion dada
                         (define (agregar-elemento-en-lista lista elemento indice)
                                 (cond
                                   [(empty? lista) (cons elemento null)];caso lista vacia
@@ -315,19 +320,25 @@ Funcion que agrega un carro en una posicion especifica dentro de la lista de TDA
                                   [else (cons (car lista) (agregar-elemento-en-lista (cdr lista) elemento (- indice 1)))]
                                   )
                           )
-                        (cond
-                          [(not (pcar? carro)) tren];caso carro no es TDA pcar
-                          [else (list (get-id-train tren) (get-maker-train tren) (get-rail-type-train tren)
-                                      (get-speed-train tren) (get-station-stay-time-train tren)
-                                      (agregar-elemento-en-lista (get-pcars-train tren) carro posicion))]
-                          )
+                        (if (compatible-model-pcars (cons carro (get-pcars-train tren)));condicion para no agregar carros incompatibles a un tren
+                            (cond
+                              [(not (pcar? carro)) tren];caso carro no es TDA pcar
+                              [else (list (get-id-train tren) (get-maker-train tren) (get-rail-type-train tren)
+                                          (get-speed-train tren) (get-station-stay-time-train tren)
+                                          (agregar-elemento-en-lista (get-pcars-train tren) carro posicion)       )]
+                              )
+                            tren
+                        )
                         )
   )
 
 #|DOM: tren sin validar pcars (TDA train) x posicion de carro dentro del tren (entero no negativo)
 REC: tren sin validar pcars (TDA train)
+Recursion natural, debido a la facilidad del uso de listas en este caso, solo se elimina un elemento en una posicion
 Funcion que elimina un carro de un TDA train, de modo que se elimina un carro en una posicion especifica de la lista carros del tren|#
 (define train-remove-car (lambda (tren posicion)
+                           ;DOM: (lista) X posicion (entero no negativo)        REC; (lista)          Recursion natural
+                           ;Funcion que elimina un elemento de una lista en una posicion dada
                            (define (eliminar-elemento-en-lista lista position)
                                    (cond
                                      [(empty? lista) null];caso lista vacia se devuelve la misma

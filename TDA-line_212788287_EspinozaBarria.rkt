@@ -9,6 +9,7 @@
 ;TDA line, abstraccion de una linea de metro como una lista de elementos
 ;Representacion: lista con elementos (id de la linea - nombre de linea
 ;              - tipo de vias de tren - lista de secciones entre estaciones* (sin aridad de secciones, pueden ser varias)
+;
 ;Como observacion, la lista de secciones del TDA line, tiene la disposicion de secciones determinado por el orden de ingreso de estas,
 ;    por lo que, en el caso de linea normal, la primera y ultima seccion en sus estaciones extremas deben ser terminales para que se considere una linea correctamente construida
 
@@ -19,17 +20,17 @@
 
 #|DOM: id (entero) X nombre (string) X tipo de vias (strig) X secciones* (section*)
 REC: linea de metro (line)
-funcion que crea un elemento del TDA line |#
+Funcion que crea un elemento del TDA line |#
 (define line (lambda (id name rail-type . sections)
                (if (and (id-line? id) (name-line? name) (rail-type-line? rail-type)
                         ;se usa otro condicional para el caso de no ingresar secciones para hacerlo despues,
-                        ;y si que se ingresaron secciones que estas efectivamente sean del TDA secciones
-                        ;(if (empty? sections) #f (sections-line? sections))                                                                                        ojo esta parte, ver condicion
-                        ); la funcion sections-line? usa recursion (ver documentacion mas abajo)
+                        ;y si que se ingresaron secciones que estas efectivamente sean del TDA section
+                        (if (empty? sections) #t (sections-line? sections)); la funcion sections-line? usa recursion (ver documentacion mas abajo)
+                        )
                    (list id name rail-type sections)
                    null)
                )
-  )                                                                                                            ;SE DEBE MEJORAR PARA CUMPLIR REQUISISTOS DE IMPLEMENTACION
+  )
 
 
 
@@ -38,8 +39,9 @@ funcion que crea un elemento del TDA line |#
 
 #|DOM: linea de metro (line)
 REC: bool
-Recursion de cola. La funcion sections-line? utiliza la recursion de cola para verificar si los elementos pertenecen cada uno al TDA section,
-    y la funcion all-station-conected usa recursion de cola para verificar que todas las estaciones esten conectadas
+Recursion de cola, debido al gran uso de lista. La funcion sections-line? utiliza la recursion de cola para verificar si
+    los elementos pertenecen cada uno al TDA section, y la funcion all-station-conected usa recursion de cola para verificar
+    que todas las estaciones esten conectadas.
 Funcion que verifica si un elemento es del tipo TDA line, cumpliendo con varias condiciones de formato|#
 (define line? (lambda (linea)
                 (if (and (id-line? (car linea)) (name-line? (cadr linea))
@@ -251,19 +253,17 @@ Resolucion declarativa|#
 (define line-length (lambda (linea)
                       (apply + (map get-distance-section (get-sections-line linea)))
                       )
-  )                                                                                           ;OJO, ANALIZAR MODO PARA LINEAS CIRCULARES, AUNQUE CREO QUE YA ESTAN ABARCADAS
+  )
 
 
 #|
-idea, recorro la lista de sections preguntando por el primer nombre de estacion
-y si el st1 o st2 son este, lo tomo como pivote y voy a la siguiente y paro la recursion                    OJO VER EL TIPO DE RECURSION, EN EL DOC SALE TACHADO Y TODAVIA NO CONTESTAS DE QUE MODO SE HACE, RECURSIVO O DECLARATIVO
-
 DOM: linea de metro (line) X nombre de estacion 1 (station) X nombre de estacion 2 (station)
 REC: numero (real no negativo)
-Recursion Natural
-funion que entrega la distania en metros entre dos estaciones de una linea, dado el nombre exacto de estas estaciones
-|#
+Recursion Natural, por lo directa que es al calcular un valor numerico en especifico
+Funcion que entrega la distancia en metros entre dos estaciones de una linea, dado el nombre exacto de estas estaciones|#
 (define line-section-length (lambda (linea name-station1 name-station2)
+                              ;DOM: (lista de TDAs section) X nombre estacion1 (string) X nombre estacion2 (string)        REC: numero          Recursion natural
+                              ;funcion que calcula la distancia entre dos estaciones de una lista de estaciones
                               (define (funcion-aux secciones st1 st2)
                                       (if (empty? secciones)   ;condicion de borde fin de recursion, no se encontraron los nombres
                                           0
@@ -274,6 +274,8 @@ funion que entrega la distania en metros entre dos estaciones de una linea, dado
                                             )
                                           )
                                 )
+                              ;DOM: (lista TDAs section) X nombre estacion de llegada(string)              REC: numero                      Recursion natural
+                              ;Funcion que ayuda a calcular la distancia de una estacion que se encuentra en el car de una lista de secciones hasta una estacion de llegada determinada
                               (define (funcion-aux2 secciones-aux estacion-llegada)
                                       (if (eqv? estacion-llegada (get-name-station (get-station2-section (car secciones-aux))))
                                           (get-distance-section (car secciones-aux))
@@ -288,15 +290,14 @@ funion que entrega la distania en metros entre dos estaciones de una linea, dado
 
 
 
-
-
-
 #|
 DOM: linea de metro (line)
 REC: costo (real positivo)
-Recursion natural
+Recursion natural, por lo directa que es al calcular un valor numerico en especifico
 Función que permite determinar el costo total en distacia de una línea |#
 (define line-cost (lambda (linea)
+                    ;DOM: (lista de TDAs section)           REC; numero       Recursion natural
+                    ;Funcion que determina el costo entre una lista de secciones
                     (define fn-aux (lambda (secciones)
                                      (if (empty? secciones)
                                          0
@@ -310,9 +311,11 @@ Función que permite determinar el costo total en distacia de una línea |#
 
 #|DOM: linea de metro (line) X nombre de estacion 1 (station) X nombre de estacion 2 (station)
 REC: costo monetario (numero real no negativo)
-Recursion de cola
+Recursion de cola, porque es util considerando el trabajo con listas de datos grandes y la doble anidacion de funciones con esta recursion
 Funcion que retorna el costo monetario del trayecto entre dos estaciones|#
 (define line-section-cost (lambda (linea name-station1 name-station2)
+                              ;DOM: (lista TDAs Section) X nombre estacion1 (string) X nombre estacion2 (string)        REC: numero          Recursion cola
+                              ;funcion que calcula la distancia entre dos estaciones de una lista de estaciones
                               (define (fn-aux secciones st1 st2)
                                       (if (empty? secciones)   ;condicion de borde fin de recursion, no se encontraron los nombres
                                           null
@@ -323,9 +326,11 @@ Funcion que retorna el costo monetario del trayecto entre dos estaciones|#
                                             )
                                           )
                                 )
+                              ;DOM: (list TDAs section) X nombre estacion1 (string) X nombre estacion2 (string)        REC: numero          Recursion cola
+                              ;Funcion que ayuda a calcular el costo de una seccion que se encuentra en el car de una lista de secciones hasta una estacion de llegada determinada
                               (define (fn-aux2 secciones-aux estacion-llegada resultado)
                                       (if (eqv? estacion-llegada (get-name-station (get-station2-section (car secciones-aux))))
-                                          (+ (get-cost-section (car secciones-aux)) resultado)
+                                          (+ (get-cost-section (car secciones-aux)) resultado);resultado final que se retorna, no deja estados pendicentes Recur cola
                                           (fn-aux2 (cdr secciones-aux) estacion-llegada (+ (get-cost-section (car secciones-aux)) resultado))
                                           );recursion de cola, el costo de va acumulando en resultado
                                 )
@@ -340,8 +345,10 @@ Funcion que retorna el costo monetario del trayecto entre dos estaciones|#
  REC: (TDA line)
 Recursividad natural; se usa recursion natural para crear la lista de TDAs sections, ademas se hace
      uso de la funcion externa is-section-in-sections-line? que utiliza recursion natural para verificar que no existan secciones repetidas en la lista
-Funcion que agrega una seccion (TDA section) entre estaciones a un TDA line|#
+Funcion que agrega una seccion (TDA section) entre estaciones a un TDA line, si la seccion ya estaba, retorna la misma linea|#
 (define line-add-section (lambda (linea nueva-seccion)
+                           ;DOM: (lista de TDAs section) X seccion (TDA section)      REC: (lista de TDAs section)     Recursion natural
+                           ;Funcion que dada una lista de secciones, agrega una nueva seccion al final de esta
                            (define fn-aux22 (lambda (secciones new-section);notar recursion de stack
                                             (if (empty? secciones)
                                                 (list new-section)
@@ -352,7 +359,7 @@ Funcion que agrega una seccion (TDA section) entre estaciones a un TDA line|#
                            (cond
                              [(not (section? nueva-seccion)) linea];caso que la nueva-seccion no pertenesca al TDA section
                              [(empty? (get-sections-line linea)) (set-sections-line linea nueva-seccion)]
-                             [(is-section-in-sections-line? (get-sections-line linea) nueva-seccion) linea];caso de que el nombre de la estacion ya este repetido                                             ojo, se deber[ia impleentar que tambien verifique la id de las secciones y que no este repetida
+                             [(is-section-in-sections-line? (get-sections-line linea) nueva-seccion) linea];caso de que el nombre de la estacion ya este repetido
                              [else (list (get-id-line linea) (get-name-line linea) (get-rail-type-line linea)
                                     (fn-aux22 (get-sections-line linea) nueva-seccion))]; caso de que no hay secciones repetidas y se agrega normalmente
                                    ; se opta por usar la funcion list en vez del constructor de lista para evitar problemas con la encapsulacion de la lista de sections,

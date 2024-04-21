@@ -10,10 +10,10 @@
 ;CONSTRUCTOR
 #|DOM: estacion 1 (station) X estacion 2 (station) X distancia entre estaciones metros (numero positivo) X costo (real no negativo)
 REC: (section) U {null}
-funcion que crea un elemento del TDA section, en el caso de algun argumento invalido devuelve null |#
+Funcion que crea un elemento del TDA section, en el caso de algun argumento invalido devuelve null |#
 (define section (lambda (station1 station2 distance cost)
-                  (if (and (station? station1) (station? station2) (positive? distance) (or (positive? cost) (zero? cost)))
-                      (list station1 station2 distance cost)                                 ;OJOOO FALTA CONDICION DE QUE SI LAS ESTACIONES ESTAN EN LA MISMA LINEA O SON ESTACIONES CONBINACION/TERMINAL
+                  (if (and (station? station1) (station? station2) (positive? distance) (or (positive? cost) (zero? cost)) (not(eqv? station1 station2)))
+                      (list station1 station2 distance cost)
                       null)
                   )
   )
