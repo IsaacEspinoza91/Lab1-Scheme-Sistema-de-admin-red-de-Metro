@@ -43,7 +43,7 @@
 (define e24 (station 24 "Puente Cal y Canto" c 65))
 
 
-(define e25 (station 25 "Plaza Quilizura" t 90))
+(define e25 (station 25 "Plaza Quilicura" t 90))
 (define e26 (station 26 "Lo Cruzat" r 45))
 (define e27 (station 27 "Ferrocarril" r 45))
 (define e28 (station 28 "Los Libertadores" c 60))
