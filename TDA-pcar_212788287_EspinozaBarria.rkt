@@ -22,6 +22,7 @@
 ;REC: station (lista de elementos), en caso de algun argumento invalido retorna lista vacia
 ;Declarativo
 ;funcion que crea un elemento del TDA pcar
+;Nivel de implementacion: 1
 (define pcar (lambda (id capacity model type)
                (if (and (number? id) (integer? capacity) (string? model))
                    (list id capacity model type)

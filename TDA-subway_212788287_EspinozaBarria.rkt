@@ -27,6 +27,7 @@
 REC: metro (subway)
 Funcion que crea un elemento del TDA subway, el que es una lista de 7 elementos, en un inicio, el TDA
      solo tendra 2 elementos (id y nombre), los demas seran agregamos posteriormente en otras funciones|#
+;Nivel de implementacion: 1
 (define subway (lambda (id nombre)(list id nombre null null null null null)))
 
 
@@ -201,6 +202,7 @@ REC: metro (subway)
 Recursion natural, por su facilidad. La funcion fn-aux emplea recursividad, para cumplir el requisisto de implementacion
 Funcion que agrega los trenes del argumento al parametro de trenes dentro del subway de modo que este tenga o no otros trenes en un inicio.
     Ademas no considera los elementos repetidos.|#
+;Nivel de implementacion: 1
 (define subway-add-train (lambda (metro . trenes)
                            ;DOM: (lista) X (lista)         REC: (lista)        Recursion natural
                            ;funcion que usa la recursion natural para retornar la union de dos listas de parametros
@@ -225,6 +227,7 @@ Funcion que agrega los trenes del argumento al parametro de trenes dentro del su
 REC: metro (subway)
 NO RECURSION a diferencia de subway-add-train
 Funcion que agrega las lineas del argumento al parametro de lineas del subway, sin considerar los elementos repetidos|#
+;Nivel de implementacion: 1
 (define subway-add-line (lambda (metro . lineas)
                            (if (subway-without-all-elements? metro)
                                (list (get-id-subway metro) (get-name-subway metro)
@@ -241,6 +244,7 @@ Funcion que agrega las lineas del argumento al parametro de lineas del subway, s
 REC: metro (subway)
 SIN RECURSION
 Funcion que agrega los conductores del argumento al parametro de drivers del subway, sin elementos repetidos|#
+;Nivel de implementacion: 1
 (define subway-add-driver (lambda (metro . conductores)
                            (if (subway-without-all-elements? metro)
                                (list (get-id-subway metro) (get-name-subway metro)
@@ -265,6 +269,7 @@ REC: null
 Recursion natural
 Funcion que retorna un string con todos los elementos de un metro TDA subway. Utiliza varias funciones
    auxiliares que estan encapsuladas dentro de la misma|#
+;Nivel de implementacion: 1
 (define (subway->string metro)
 
   ;Dom lista de trenes (list TDAs train)   REC: string
@@ -375,6 +380,7 @@ Funcion que retorna un string con todos los elementos de un metro TDA subway. Ut
 REC:metro (TDA subway)
 Sin recursion
 Funcion que modifica los costos de todas las secciones de de todas las lineas de un TDA subway, y lo retorna|#
+;Nivel de implementacion: 1
 (define (subway-rise-section-cost metro funct)
   ;DOM: secciones (lista de TDAs section) X funcion de costo currificada
   ;REC: secciones (lista TDAs section)
@@ -406,6 +412,7 @@ Funcion que modifica los costos de todas las secciones de de todas las lineas de
 REC: metro (subway)
 Sin recursion, y ademas utiliza funciones propias auxiliares
 Funcion que modifica el tiempo de parada de una estacion|#
+;Nivel de implementacion: 1
 (define (subway-set-station-stoptime metro name-st time)
 
   #|DOM: secciones (lista de TDAs section) X nombre estacion (string) X nuevo tiempo en segundos (numero)
@@ -457,6 +464,7 @@ REC: metro (subway)
 Sin recursividad
 Funcion que asigna un tren a una linea dentro del subway. Si ya existen metros asociados a una linea, se agregan junto a los previos.
      En el caso de que los trenes y/o lineas ingresadas no esten en el subway, se retorna el mismo subway sin cambios|#
+;Nivel de implementacion: 1
 (define (subway-assign-train-to-line metro id-tren id-linea)
 
   ;DOM:lista de line-trains (lista line-trains de TDA subway) X id linea (entero) X id tren (entero)
@@ -512,18 +520,15 @@ Funcion que asigna un tren a una linea dentro del subway. Si ya existen metros a
       X nombre de estacion de inicio (string) X nombre estacion de llegada (string)
 REC: metro (subway)
 Funcion que asigna un conductor a un tren en un horario de salida considerando estacion de partida y llegada|#
-;debo verificar si esta el tren, la estacion en la linea, si esta el driver
-;ademas si el conductor conduce en la nueva, ver tipo de riel
+;Nivel de implementacion: 0,5
 (define (subway-assign-driver-to-train metro id-driver id-tren time-i st-inicial st-final)
 
   ;    condicion de que el driver y el tren esten en el subway, agregar condicion compatibilidad de maker con el de la linea
   (if (and (not (boolean? (member id-driver  (map (lambda (s) (get-id-driver s))   (get-drivers-subway metro))  )))
            (not (boolean? (member id-tren    (map (lambda (g) (get-id-train g))    (get-trains-subway  metro))  )))
-           ;(eqv? (get-maker-train-driver (filter (lambda (s) (= id-driver (get-id-driver s)))   (get-drivers-subway metro)))
-           ;      (get-maker-train-driver (filter (lambda (s) (= id-driver (get-id-driver s)))   (get-lines-subway metro)))
-           ;      )
            )
 
+      
       ;usamos alguna funcion que agrega un nuevo elemento a la lista, sin importanr que ya existan previos o
       ; que sea nula o que esten repetidos, despues ver c[omo implementar esta condicion
       (list (get-id-subway metro) (get-name-subway metro) (get-trains-subway metro)
@@ -531,7 +536,7 @@ Funcion que asigna un conductor a un tren en un horario de salida considerando e
             (get-line-trains-subway metro)
             (append (get-routes-subway metro) (list (list id-driver id-tren time-i st-inicial st-final) ))
             )
-
+      
       metro;caso de que no este el driver y/o el tren, se devuelve el subway sin cambios
       )
   )
@@ -539,11 +544,12 @@ Funcion que asigna un conductor a un tren en un horario de salida considerando e
 
 
 
+;Nivel de implementacion: 0
+;(define where-is-train )
 
 
-
-
-
+;Nivel de implementacion: 0
+;(define subway-train-path)
 
 
 

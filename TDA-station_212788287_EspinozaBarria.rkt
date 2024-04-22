@@ -11,7 +11,8 @@
 ;DOM: id (entero) X nombre (string) X tipo de estacion (TDA type-station) X tiempo de parada en segundos (entero positivo)
 ;REC: station (lista de elementos), en caso de algun argumento invalido retorna lista vacia
 ;Declarativo
-;funcion que crea un elemento del TDA station, 
+;Funcion que crea un elemento del TDA station,
+;Nivel de implementacion: 1
 (define station (lambda (id name type stop-time)
                   (if (and (number? id) (string? name) (type-station? type) (integer? stop-time))
                       ;condiciones para verificar la validez de los tipos de datos de los argumentos 

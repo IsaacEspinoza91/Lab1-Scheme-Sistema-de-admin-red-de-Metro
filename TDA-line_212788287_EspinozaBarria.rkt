@@ -21,6 +21,7 @@
 #|DOM: id (entero) X nombre (string) X tipo de vias (strig) X secciones* (section*)
 REC: linea de metro (line)
 Funcion que crea un elemento del TDA line |#
+;Nivel de implementacion: 1
 (define line (lambda (id name rail-type . sections)
                (if (and (id-line? id) (name-line? name) (rail-type-line? rail-type)
                         ;se usa otro condicional para el caso de no ingresar secciones para hacerlo despues,
@@ -43,6 +44,7 @@ Recursion de cola, debido al gran uso de lista. La funcion sections-line? utiliz
     los elementos pertenecen cada uno al TDA section, y la funcion all-station-conected usa recursion de cola para verificar
     que todas las estaciones esten conectadas.
 Funcion que verifica si un elemento es del tipo TDA line, cumpliendo con varias condiciones de formato|#
+;Nivel de implementacion: 1
 (define line? (lambda (linea)
                 (if (and (id-line? (car linea)) (name-line? (cadr linea))
                          (rail-type-line? (caddr linea)) (sections-line? (cadddr linea))
@@ -250,6 +252,7 @@ Funcion que crea un elemento TDA line a partir del elemento linea de los argumen
 REC: distancia (real positivo)
 Función que permite determinar el largo total en distacia de una línea
 Resolucion declarativa|#
+;Nivel de implementacion: 1
 (define line-length (lambda (linea)
                       (apply + (map get-distance-section (get-sections-line linea)))
                       )
@@ -261,6 +264,7 @@ DOM: linea de metro (line) X nombre de estacion 1 (station) X nombre de estacion
 REC: numero (real no negativo)
 Recursion Natural, por lo directa que es al calcular un valor numerico en especifico
 Funcion que entrega la distancia en metros entre dos estaciones de una linea, dado el nombre exacto de estas estaciones|#
+;Nivel de implementacion: 1
 (define line-section-length (lambda (linea name-station1 name-station2)
                               ;DOM: (lista de TDAs section) X nombre estacion1 (string) X nombre estacion2 (string)        REC: numero          Recursion natural
                               ;funcion que calcula la distancia entre dos estaciones de una lista de estaciones
@@ -295,6 +299,7 @@ DOM: linea de metro (line)
 REC: costo (real positivo)
 Recursion natural, por lo directa que es al calcular un valor numerico en especifico
 Función que permite determinar el costo total en distacia de una línea |#
+;Nivel de implementacion: 1
 (define line-cost (lambda (linea)
                     ;DOM: (lista de TDAs section)           REC; numero       Recursion natural
                     ;Funcion que determina el costo entre una lista de secciones
@@ -313,6 +318,7 @@ Función que permite determinar el costo total en distacia de una línea |#
 REC: costo monetario (numero real no negativo)
 Recursion de cola, porque es util considerando el trabajo con listas de datos grandes y la doble anidacion de funciones con esta recursion
 Funcion que retorna el costo monetario del trayecto entre dos estaciones|#
+;Nivel de implementacion: 1
 (define line-section-cost (lambda (linea name-station1 name-station2)
                               ;DOM: (lista TDAs Section) X nombre estacion1 (string) X nombre estacion2 (string)        REC: numero          Recursion cola
                               ;funcion que calcula la distancia entre dos estaciones de una lista de estaciones
@@ -346,6 +352,7 @@ Funcion que retorna el costo monetario del trayecto entre dos estaciones|#
 Recursividad natural; se usa recursion natural para crear la lista de TDAs sections, ademas se hace
      uso de la funcion externa is-section-in-sections-line? que utiliza recursion natural para verificar que no existan secciones repetidas en la lista
 Funcion que agrega una seccion (TDA section) entre estaciones a un TDA line, si la seccion ya estaba, retorna la misma linea|#
+;Nivel de implementacion: 1
 (define line-add-section (lambda (linea nueva-seccion)
                            ;DOM: (lista de TDAs section) X seccion (TDA section)      REC: (lista de TDAs section)     Recursion natural
                            ;Funcion que dada una lista de secciones, agrega una nueva seccion al final de esta
