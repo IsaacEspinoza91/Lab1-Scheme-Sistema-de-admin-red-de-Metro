@@ -549,7 +549,7 @@ Funcion que asigna un conductor a un tren en un horario de salida considerando e
 
 
 ;Nivel de implementacion: 0
-;(define subway-train-path)
+;(define subway-train-path )
 
 
 
